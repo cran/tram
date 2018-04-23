@@ -8,24 +8,29 @@ asvar.factor <- function(object, name, ...)
 asvar.ordered <- function(object, name, ...)  
     variables::ordered_var(name, levels = levels(object))
 
-asvar.numeric <- function(object, name, prob = c(.1, .9), support = NULL, ...) {
-    if (is.integer(object))
-        return(variables::numeric_var(name, support = sort(unique(object))))  
-    if (is.null(support)) {
-        support <- quantile(object, prob = prob)
-        add <- range(object) - support
-        return(variables::numeric_var(name, support = support, add = add, ...))
+asvar.numeric <- function(object, name, prob = c(.1, .9), support = NULL, bounds = NULL, add = c(0, 0), ...) {
+    if (is.integer(object)) {
+        if (is.null(support)) 
+            support <- sort(unique(object))
+        return(variables::numeric_var(name, support = support, bounds = bounds, add = add, ...))  
     }
-    return(variables::numeric_var(name, support = support, ...))
+    if (is.null(support)) {
+        support <- quantile(object, prob = prob, na.rm = TRUE)
+        add <- range(object) - support
+        return(variables::numeric_var(name, support = support, add = add, bounds = bounds, ...))
+    }
+    return(variables::numeric_var(name, support = support, bounds = bounds, add = add,...))
 }
 
-asvar.Surv <- function(object, name, prob = c(.1, .9), support = NULL, bounds = c(0, Inf), ...) {
+asvar.Surv <- function(object, name, prob = c(.1, .9), support = NULL, bounds = c(0, Inf), add = c(0, 0), ...) {
     if (is.null(support)) {
         support <- quantile(survfit(y ~ 1, data = data.frame(y = object)), prob = prob)$quantile
         if (is.na(support[2])) 
             support[2] <- max(object[, 1])
+        add <- c(0 - support[1], 0)
+        return(variables::numeric_var(name, support = support, bounds = bounds, add = add, ...))
     }
-    variables::numeric_var(name, support = support, bounds = bounds, ...)
+    variables::numeric_var(name, support = support, bounds = bounds, add = add, ...)
 }
 
 asvar.response <- function(object, name, prob = c(.1, .9), support = NULL, bounds = c(-Inf, Inf), ...) {

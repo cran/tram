@@ -343,14 +343,6 @@ plot(logHR ~ age, data = nd, pch = 19, xlab = "Age",
      ylab = "log-Hazard Ratio")
 abline(h = coef(Coxph_GBSG2_1)["horThyes"])
 
-## ----mlt-coef, echo = FALSE, results = "hide"----------------------------
-### print coefs for regression tests
-objs <- ls()
-mltobj <- objs[grep("^mlt_", objs)]
-sapply(mltobj, function(m) eval(parse(text = paste("coef(", m, ")"))))
-#library("mlt.docreg")
-#sapply(mltobj, function(m) eval(parse(text = paste("checkGH(", m, ")"))))
-
 ## ----sessionInfo, echo = FALSE, results = "hide"-------------------------
 sessionInfo()
 

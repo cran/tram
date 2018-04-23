@@ -115,10 +115,10 @@ URL \url{https://CRAN.R-project.org/package=tram}.}
 The \pkg{tram} package offers standard formula-based \proglang{R} interfaces
 for stratified linear transformation models.  The package uses general
 infrastructure for likelihood-based inference in conditional transformation
-models provided by package \pkg{mlt} \citep{pkg:mlt}.  The underlying
+models provided by package \pkg{mlt} \citep{Hothorn_2018,pkg:mlt}.  The underlying
 theory is presented by \cite{Hothorn_Moest_Buehlmann_2017} and an
-introduction to the \pkg{mlt} package is given in the package vignette
-of package \pkg{mlt.docreg}. An interface to
+introduction to the \pkg{mlt} package is given by \cite{Hothorn_2018}.
+An interface to
 package \pkg{trtf} \citep{pkg:trtf} also allows more complex models to be
 fitted by recursive partitioning and random forest technology \citep{Hothorn_Zeileis_2017}.
 
@@ -451,6 +451,8 @@ for simplicity)
 \end{eqnarray*}
 where we replace the cumulative distribution function of the standard normal
 $\Phi$ with the cumulative distribution function of the standard logistic.
+Note that we add the linear predictor instead of substracting it (as in the
+Cox model, see Section~\ref{sec:survival}).
 In this model, the conditional odds is given by
 \begin{eqnarray*}
 \frac{\Prob(\rY \le \ry \mid \rX = \rx)}{\Prob(\rY > \ry \mid \rX = \rx)} =
@@ -458,7 +460,9 @@ In this model, the conditional odds is given by
 \end{eqnarray*}
 The odds ratio between a subject with covariate status $\rx$ and 
 a subject with covariates such that $\tilde{\rx}^\top
-\shiftparm = 0$ is simply $\exp(\tilde{\rx}^\top \shiftparm)$. The
+\shiftparm = 0$ is simply $\exp(\tilde{\rx}^\top \shiftparm)$ (and not
+$\exp(-\tilde{\rx}^\top \shiftparm)$, therefore a positive shift makes sense
+in this model). The
 response-varying baseline transformations conveniently cancel out in this
 odds ratio. We can interpret $\beta$ as log-odds ratios, simultaneously for
 all possible binary logistic regression models with cutpoint $\ry$. The
@@ -619,7 +623,7 @@ for (i in idx) {
 \end{figure}
 
 
-\section{Survival Analysis}
+\section{Survival Analysis} \label{sec:survival}
 
 Yet another choice of $\pZ$ is motivated by the desire to obtain simple model
 interpretation. In survival analysis, we are interested in the conditional
@@ -1128,16 +1132,6 @@ x <- readLines("packages.bib")
 for (p in pkgs)
     x <- gsub(paste("\\{", p, ":", sep = ""), paste("\\{\\\\pkg{", p, "}:", sep = ""), x)
 cat(x, sep = "\n", file = "packages.bib", append = FALSE)
-@
-
-
-<<mlt-coef, echo = FALSE, results = "hide">>= 
-### print coefs for regression tests
-objs <- ls()
-mltobj <- objs[grep("^mlt_", objs)]
-sapply(mltobj, function(m) eval(parse(text = paste("coef(", m, ")"))))
-#library("mlt.docreg")
-#sapply(mltobj, function(m) eval(parse(text = paste("checkGH(", m, ")"))))
 @
 
 <<sessionInfo, echo = FALSE, results = "hide">>=

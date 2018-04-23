@@ -105,7 +105,7 @@ tram <- function(formula, data, subset, weights, offset, cluster, na.action = na
                  distribution = c("Normal", "Logistic", "MinExtrVal"),
                  transformation = c("discrete", "linear", "logarithmic", "smooth"),
                  LRtest = TRUE, 
-                 prob = c(.1, .9), support = NULL, order = 6, negative =
+                 prob = c(.1, .9), support = NULL, bounds = NULL, add = c(0, 0), order = 6, negative =
                  TRUE, scale = TRUE, model_only = FALSE, ...) 
 {
 
@@ -117,7 +117,8 @@ tram <- function(formula, data, subset, weights, offset, cluster, na.action = na
         td <- eval(mf, parent.frame())
     } 
 
-    rvar <- asvar(td$response, td$rname, prob = prob, support = support)
+    rvar <- asvar(td$response, td$rname, prob = prob, support = support,
+                  bounds = bounds, add = add)
     rbasis <- mkbasis(rvar, transformation = transformation, order = order)
 
     iS <- NULL
@@ -135,8 +136,31 @@ tram <- function(formula, data, subset, weights, offset, cluster, na.action = na
 
     if (model_only) return(model)
 
-    ret <- mlt(model, data = td$mf, weights = td$weights, offset = td$offset, 
-               scale = scale, ...)
+    ### <FIXME> this is a hack: stratum terms must not appear in the
+    ###         linear predictor; so we remove them _by name_ (which isn't
+    ###         save). Use terms and drop. Here we use fixed which should
+    ###         be OK.
+    Xfixed <- NULL
+    if (!is.null(iS) && !is.null(iX)) {
+        ### fix coefs corresponding to a stratum to zero
+        nS <- colnames(model.matrix(iS, data = td$mf[1:10,]))
+        nX <- colnames(model.matrix(iX, data = td$mf[1:10,]))
+        if (any(xin <- nX %in% nS)) {
+            Xfixed <- numeric(sum(xin))
+            names(Xfixed) <- nX[xin]
+        }
+    } 
+    ### </FIXME>
+    fixed <- c(list(...)$fixed, Xfixed)
+
+    args <- list(...)
+    args$model <- model
+    args$data <- td$mf
+    args$weights <- td$weights
+    args$offset <- td$offset
+    args$scale <- scale
+    args$fixed <- fixed
+    ret <- do.call("mlt", args)
     ret$terms <- td$terms
     ret$cluster <- td$cluster
     if (!is.null(iX))
@@ -149,8 +173,12 @@ tram <- function(formula, data, subset, weights, offset, cluster, na.action = na
     if (LRtest & !is.null(iX)) {
         nullmodel <- ctm(response = rbasis, interacting = iS, 
                          todistr = distribution, data = td$mf)
-        nullret <- mlt(nullmodel, data = td$mf, weights = td$weights, offset = td$offset, 
-                       scale = scale, ...)
+        if (!is.null(fixed)) {
+            fixed <- fixed[names(fixed) %in% names(coef(nullmodel))]
+            args$fixed <- fixed
+        }
+        args$model <- nullmodel
+        nullret <- do.call("mlt", args)
         nulllogLik <- logLik(nullret)
         fulllogLik <- logLik(ret)
         ret$LRtest <- c(LRstat = -2 * (nulllogLik - fulllogLik), 
