@@ -2,6 +2,14 @@
 \name{NEWS}
 \title{NEWS file for the tram package}
 
+\section{Changes in Version 0.2-2 (2018-06-22)}{
+  \itemize{
+    \item{Use default \code{bounds = c(0, Inf)} for \code{Surv} objects (for example
+          in \code{Coxph}.}
+    \item{Update to \pkg{mlt} 1.0-2.}
+  }
+}
+
 \section{Changes in Version 0.2-1 (2018-04-20)}{
   \itemize{
     \item{Likelihood ratio tests with fixed parameters gave an error.}
