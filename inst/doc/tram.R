@@ -329,15 +329,27 @@ nd <- data.frame(horTh = sort(unique(GBSG2$horTh)))
 plot(Coxph_GBSG2_3, newdata = nd, 
      tp_args = list(type = "survivor", col = col))
 
-## ----GBSG2-Cox-4, cache = TRUE-------------------------------------------
+## ----GBSG2-Cox-4---------------------------------------------------------
+GBSG2$int <- 1
+Coxph_GBSG2_3 <- Coxph(Surv(time, cens) ~ int + horTh, data = GBSG2, 
+                       fixed = c("int" = 0))
+(Coxph_GBSG2_4 <- trafotree(Coxph_GBSG2_3, 
+    formula = Surv(time, cens) ~ int + horTh | age + menostat + tsize + 
+                                 tgrade + pnodes + progrec + estrec, 
+    data = GBSG2, parm = c("int", "horThyes"), 
+    mltargs = list(fixed = c("int" = 0))))
+logLik(Coxph_GBSG2_4)
+coef(Coxph_GBSG2_4)[, "horThyes"]
+
+## ----GBSG2-Cox-5, cache = TRUE-------------------------------------------
 ctrl <- ctree_control(minsplit = 30, minbucket = 15, mincriterion = 0)
-Coxph_GBSG2_4 <- traforest(Coxph_GBSG2_1, 
+Coxph_GBSG2_5 <- traforest(Coxph_GBSG2_1, 
     formula = Surv(time, cens) ~ horTh | age, control = ctrl, 
     ntree = 100, mtry = 1, data = GBSG2)
 
-## ----GBSG2-Cox-4-plot, cache = TRUE--------------------------------------
+## ----GBSG2-Cox-5-plot, cache = TRUE--------------------------------------
 nd <- data.frame(age = 30:70)
-cf <- predict(Coxph_GBSG2_4, newdata = nd, type = "coef")
+cf <- predict(Coxph_GBSG2_5, newdata = nd, type = "coef")
 nd$logHR <- sapply(cf, function(x) x["horThyes"])
 plot(logHR ~ age, data = nd, pch = 19, xlab = "Age", 
      ylab = "log-Hazard Ratio")

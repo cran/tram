@@ -1,16 +1,14 @@
-\name{Lm}
-\alias{Lm}
-%- Also NEED an '\alias' for EACH other topic documented here.
+\name{Lehmann}
+\alias{Lehmann}
 \title{
-  Normal Linear Model
+  Linear Regression for Lehrmann-alternatives
 }
 \description{
-  Normal linear model with benefits
+  Non-normal linear regression for Lehrmann-alternatives
 }
 \usage{
-Lm(formula, data, subset, weights, offset, cluster, na.action = na.omit, ...)
+Lehmann(formula, data, subset, weights, offset, cluster, na.action = na.omit, ...)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{formula}{an object of class \code{"formula"}: a symbolic description 
           of the model structure to be
@@ -43,29 +41,26 @@ Lm(formula, data, subset, weights, offset, cluster, na.action = na.omit, ...)
   \item{\dots}{additional arguments to \code{\link{tram}}.}
 }
 \details{
-A normal linear model with simulaneous estimation of regression coefficients
-and scale parameter(s). This function also allows for stratum-specific
-intercepts and variances as well as censoring and truncation in the
-response.
-
-Note that the scale of the parameters is different from what is reported by
-\code{\link[stats]{lm}}; the discrepancies are explained in the package
-vignette.
-
-The model is defined with a negative shift term. Large values of the
-linear predictor correspond to large values of the conditional 
-expectation response.
-
+This transformation model uses the cumulative distribution function for the
+standard Gumbel maximum extreme value distribution to map the shifted
+transformation function into probabilities. The exponential of the shift
+paramater can be interpreted as a Lehmann-alternative.
 }
 \value{
-An object of class \code{BoxCox}, with corresponding \code{coef},
+An object of class \code{Lehmann}, with corresponding \code{coef},
 \code{vcov}, \code{logLik}, \code{estfun}, \code{summary}, 
 \code{print}, \code{plot} and \code{predict} methods.
 }
 \references{
+
+  Erich L. Lehmann (1953), The Power of Rank Tests,
+  \emph{The Annals of Mathematical Statistics}, \bold{24}(1),
+  23-43.
+
   Torsten Hothorn, Lisa Moest, Peter Buehlmann (2018), Most Likely
   Transformations, \emph{Scandinavian Journal of Statistics}, \bold{45}(1),
   110--134, \doi{10.1111/sjos.12291}.
+
 }
 \examples{
 
@@ -74,9 +69,10 @@ An object of class \code{BoxCox}, with corresponding \code{coef},
   lm(cmedv ~ crim + zn + indus + chas + nox + rm + age + dis + 
              rad + tax + ptratio + b + lstat, data = BostonHousing2)
 
-  Lm(cmedv ~ chas + crim + zn + indus + nox + 
-             rm + age + dis + rad + tax + ptratio + b + lstat, 
-             data = BostonHousing2)
+  Lehmann(cmedv ~ chas + crim + zn + indus + nox + 
+                  rm + age + dis + rad + tax + ptratio + b + lstat, 
+                  data = BostonHousing2)
 }
 \keyword{models}
 \keyword{regression}
+\keyword{smooth}
