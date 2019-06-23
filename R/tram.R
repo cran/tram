@@ -102,7 +102,7 @@ tram_data <- function(formula, data, subset, weights, offset, cluster, na.action
 }
 
 tram <- function(formula, data, subset, weights, offset, cluster, na.action = na.omit,
-                 distribution = c("Normal", "Logistic", "MinExtrVal"),
+                 distribution = c("Normal", "Logistic", "MinExtrVal", "MaxExtrVal"),
                  transformation = c("discrete", "linear", "logarithmic", "smooth"),
                  LRtest = TRUE, 
                  prob = c(.1, .9), support = NULL, bounds = NULL, add = c(0, 0), order = 6, negative =
@@ -119,6 +119,10 @@ tram <- function(formula, data, subset, weights, offset, cluster, na.action = na
 
     rvar <- asvar(td$response, td$rname, prob = prob, support = support,
                   bounds = bounds, add = add)
+    if (!is.null(rvar$bounds) && log_first) {
+        if (rvar$bounds[1] < sqrt(.Machine$double.eps)) 
+            rvar$bounds[1] <- sqrt(.Machine$double.eps)
+    }
     rbasis <- mkbasis(rvar, transformation = transformation, order = order,
                       extrapolate = extrapolate, log_first = log_first)
 
