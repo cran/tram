@@ -1,6 +1,6 @@
 
 as.mlt.tram <- function(object) {
-    cls <- which(class(object) == "mlt")
+    cls <- which(class(object) == "mlt_fit")
     class(object) <- class(object)[-(1:(cls - 1))]
     object
 }    
@@ -66,16 +66,32 @@ coef.Lm <- function(object, as.lm = FALSE, ...) {
 coef.Survreg <- function(object, as.survreg = FALSE, ...)
     coef.Lm(object, as.lm = as.survreg, ...)
         
-vcov.tram <- function(object, with_baseline = FALSE, ...) 
+vcov.tram <- function(object, with_baseline = FALSE, complete = FALSE, ...) 
 {
-    if (is.null(object$cluster)) {
-        ret <- vcov(as.mlt(object), ...)
-    } else {
-        ret <- sandwich::vcovCL(as.mlt(object), cluster = object$cluster)
+
+    if (complete) stop("complete not implemented")
+
+    ### full covariance matrix
+    if (with_baseline) {
+        if (is.null(object$cluster)) {
+            return(vcov(as.mlt(object), ...))
+        } else {
+            return(sandwich::vcovCL(as.mlt(object), 
+                                    cluster = object$cluster))
+        }
     }
-    if (with_baseline) return(ret)
     if (is.null(object$shiftcoef)) return(NULL)
-    return(ret[object$shiftcoef, object$shiftcoef, drop = FALSE])
+   
+    ### covariance matrix for shift terms only
+    ### return Schur complement
+    H <- Hessian(as.mlt(object), ...)
+    shift <- which(colnames(H) %in% object$shiftcoef)
+    Hlin <- H[shift, shift]
+    Hbase <- H[-shift, -shift]
+    Hoff <- H[shift, -shift]
+    ret <- solve(Hlin - tcrossprod(Hoff %*% solve(Hbase), Hoff))
+    colnames(ret) <- rownames(ret) <- object$shiftcoef
+    return(ret)
 }
 
 nobs.tram <- function(object, ...) {

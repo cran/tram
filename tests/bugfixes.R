@@ -1,6 +1,7 @@
 
 library("tram")
 library("sandwich")
+library("survival")
 
 ### scores for fixed parameters
 cars$int <- 1
@@ -67,3 +68,17 @@ m3 <- Colr(y.p1 ~ x, data = d,
 l1 <- m1$logliki(coef(as.mlt(m1)), rep(1, nrow(d)))
 l3 <- m3$logliki(coef(as.mlt(m3)), rep(1, nrow(d)))
 stopifnot(cor(l1, l3) > .96)
+
+### normal CDF approximation by Matic et al (2018)
+x <- -600:600 / 100
+p1 <- .Call("R_pnormMRS", x)
+p2 <- pnorm(x)
+stopifnot(max(abs(p1 - p2)) < 5.79e-6) ### max absolute error
+
+### 0.3-0
+data("GBSG2", package = "TH.data")
+### this model included an additional intercept
+m1 <- Coxph(Surv(time, cens) | menostat:tgrade ~ horTh, data = GBSG2)
+m2 <- Coxph(Surv(time, cens) | 0 + menostat:tgrade ~ horTh, data = GBSG2)
+stopifnot(max(abs(coef(as.mlt(m1)) - coef(as.mlt(m2)))) < 
+          sqrt(.Machine$double.eps))
