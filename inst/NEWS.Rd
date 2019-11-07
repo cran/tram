@@ -2,6 +2,15 @@
 \name{NEWS}
 \title{NEWS file for the tram package}
 
+\section{Changes in Version 0.3-1 (2019-11-05)}{
+  \subsection{Bugfixes}{
+    \itemize{
+      \item{Fix problem in C header file.}
+      \item{Fix problem with responses of class \code{R}, spotted by Balint Tamasi.}
+    }
+  }
+}
+
 \section{Changes in Version 0.3-0 (2019-10-09)}{
   \subsection{Bugfixes}{
     \itemize{
