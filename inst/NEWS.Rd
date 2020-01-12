@@ -2,14 +2,40 @@
 \name{NEWS}
 \title{NEWS file for the tram package}
 
+\section{Changes in Version 0.3-2 (2020-01-08)}{
+  \itemize{
+    \item{\code{profile} method added for computing 
+          profile likelihood confidence intervals.}
+    \item{Allow additional linear inequality constraints for regression
+          coefficients.}
+  }
+  \subsection{Bugfixes}{
+    \itemize{
+      \item{}
+    }
+  }
+}
+
 \section{Changes in Version 0.3-1 (2019-11-05)}{
   \subsection{Bugfixes}{
     \itemize{
       \item{Fix problem in C header file.}
-      \item{Fix problem with responses of class \code{R}, spotted by Balint Tamasi.}
+      \item{Fix problems with responses of class \code{R}, spotted by Balint Tamasi.}
     }
   }
 }
+
+\section{Changes in Version 0.3-2 (2019-12-02)}{
+  \itemize{
+    \item{Add new demo.}
+  }
+  \subsection{Bugfixes}{
+    \itemize{
+      \item{Deal with \code{model_only} in \code{Survreg}, spotted by Balint Tamasi.}
+    }
+  }
+}
+
 
 \section{Changes in Version 0.3-0 (2019-10-09)}{
   \subsection{Bugfixes}{

@@ -7,7 +7,7 @@ import("basefun")
 import("Formula")
 importFrom("methods", "as")
 importFrom("sandwich", "vcovCL", "estfun")
-importFrom("multcomp", "cftest", "adjusted_calpha", "univariate_calpha")
+importFrom("multcomp", "cftest", "adjusted_calpha", "univariate_calpha", "glht")
 importFrom("stats", "model.matrix", "coef", "vcov", "nobs", "predict", "quantile", "na.omit",
            "logLik", "model.response", "model.weights", "model.offset", "terms", "as.formula",
            "printCoefmat", "qqline", "qqplot", "qunif", "variable.names", "pchisq",
@@ -15,7 +15,7 @@ importFrom("stats", "model.matrix", "coef", "vcov", "nobs", "predict", "quantile
 import("Matrix")
 importFrom("survival", "survfit", "Surv")
 importFrom("graphics", "plot", "lines", "polygon")
-#importFrom("stats", "update")
+importFrom("stats", "qchisq")
 
 export(tram, tram_data, Coxph, Colr, Polr, Lm, BoxCox, Survreg, Lehmann, mtram)
 
@@ -39,3 +39,4 @@ S3method("print", "summary.tram")
 S3method("plot", "tram")
 S3method("update", "tram")
 S3method("residuals", "tram")
+S3method("profile", "tram")
