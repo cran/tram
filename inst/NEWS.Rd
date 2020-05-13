@@ -2,17 +2,30 @@
 \name{NEWS}
 \title{NEWS file for the tram package}
 
+\section{Changes in Version 0.4-0 (2020-05-11)}{
+  \itemize{
+    \item{Add \code{Aareg} for Aalen additive hazard models.}
+  }
+}
+
+\section{Changes in Version 0.3-3 (2020-01-16)}{
+  \itemize{
+    \item{\code{score_test} generic and method added for computing 
+          score tests and corresponding confidence intervals.}
+    \item{\code{perm_test} generic and method added for computing 
+          permutation score tests.}
+    \item{\code{PI} converts log-odds ratios to probabilistic indices and 
+          vice versa.}
+  }
+}
+
+
 \section{Changes in Version 0.3-2 (2020-01-08)}{
   \itemize{
     \item{\code{profile} method added for computing 
           profile likelihood confidence intervals.}
     \item{Allow additional linear inequality constraints for regression
           coefficients.}
-  }
-  \subsection{Bugfixes}{
-    \itemize{
-      \item{}
-    }
   }
 }
 

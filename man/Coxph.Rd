@@ -87,8 +87,12 @@ An object of class \code{Coxph}, with corresponding \code{coef},
   ### Wald intervals
   confint(m1)
   confint(m2)
-  ### profile likelihood intervals
+  ### profile likelihood interval
   confint(profile(m2))
+  ### score interval
+  confint(score_test(m2))
+  ### permutation score interval
+  confint(perm_test(m2))
 
 }
 \keyword{models}

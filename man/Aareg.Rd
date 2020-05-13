@@ -1,13 +1,13 @@
-\name{Lehmann}
-\alias{Lehmann}
+\name{Aareg}
+\alias{Aareg}
 \title{
-  Linear Regression for Lehmann-alternatives
+  Aalen Additive Hazards Model
 }
 \description{
-  Non-normal linear regression for Lehmann-alternatives
+  Aalen model with fully parameterised hazard function
 }
 \usage{
-Lehmann(formula, data, subset, weights, offset, cluster, na.action = na.omit, ...)
+Aareg(formula, data, subset, weights, offset, cluster, na.action = na.omit, ...)
 }
 \arguments{
   \item{formula}{an object of class \code{"formula"}: a symbolic description 
@@ -41,21 +41,23 @@ Lehmann(formula, data, subset, weights, offset, cluster, na.action = na.omit, ..
   \item{\dots}{additional arguments to \code{\link{tram}}.}
 }
 \details{
-This transformation model uses the cumulative distribution function for the
-standard Gumbel maximum extreme value distribution to map the shifted
-transformation function into probabilities. The exponential of the shift
-paramater can be interpreted as a Lehmann-alternative.
+
+This function allows simultaneous
+estimation of the cumulative hazard parameterised by a Bernstein polynomial. 
+The model is typically fitted with time-varying coefficients, all types of random
+censoring and trunction are allowed.
+
+The responses is bounded (\code{bounds = c(0, Inf)}) when specified as a
+\code{Surv} object. Otherwise, \code{bounds} can be specified via
+\code{\dots}.
+
 }
 \value{
-An object of class \code{Lehmann}, with corresponding \code{coef},
+An object of class \code{Aareg}, with corresponding \code{coef},
 \code{vcov}, \code{logLik}, \code{estfun}, \code{summary}, 
 \code{print}, \code{plot} and \code{predict} methods.
 }
 \references{
-
-  Erich L. Lehmann (1953), The Power of Rank Tests,
-  \emph{The Annals of Mathematical Statistics}, \bold{24}(1),
-  23-43.
 
   Torsten Hothorn, Lisa Moest, Peter Buehlmann (2018), Most Likely
   Transformations, \emph{Scandinavian Journal of Statistics}, \bold{45}(1),
@@ -64,15 +66,35 @@ An object of class \code{Lehmann}, with corresponding \code{coef},
 }
 \examples{
 
-  data("BostonHousing2", package = "mlbench")
+  data("GBSG2", package = "TH.data")
+  library("survival")
+  GBSG2$time <- as.numeric(GBSG2$time)
+  GBSG2$y <- with(GBSG2, Surv(time, cens))
 
-  lm(cmedv ~ crim + zn + indus + chas + nox + rm + age + dis + 
-             rad + tax + ptratio + b + lstat, data = BostonHousing2)
+  ### Cox proportional hazards model
+  m1 <- Coxph(y ~ horTh, data = GBSG2, support = c(1, 1500))
+  logLik(m1)
 
-  Lehmann(cmedv ~ chas + crim + zn + indus + nox + 
-                  rm + age + dis + rad + tax + ptratio + b + lstat, 
-                  data = BostonHousing2)
+  ### Aalen additive hazards model with time-varying effects
+  m2 <- Aareg(y | horTh ~ 1, data = GBSG2, support = c(1, 1500))
+  logLik(m2)
+
+  ### compare the hazard functions
+  nd <- data.frame(horTh = unique(GBSG2$horTh))
+  col <- 1:2
+  lty <- 1:2
+  plot(as.mlt(m1), newdata = nd, type = "hazard", 
+       col = col, lty = lty[1], xlab = "time")
+  plot(as.mlt(m2), newdata = nd, type = "hazard", 
+       col = col, lty = 2, add = TRUE)
+  legend("topright", col = rep(col, each = 2), 
+         lty = rep(1:2), bty = "n",
+         legend = paste(rep(paste("horTh:", 
+                                  levels(nd$horTh)), each = 2),
+                        rep(c("Cox", "Aalen"), 2)))
+
 }
 \keyword{models}
 \keyword{regression}
+\keyword{survival}
 \keyword{smooth}
