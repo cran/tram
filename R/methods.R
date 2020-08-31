@@ -350,11 +350,14 @@ score_test.tram <- function(object, parm = names(coef(object)),
                     Sci <- approx(x = s$y, y = s$x, 
                                   xout = qnorm(c(alpha, 1 - alpha)))$y
                 }
+            } else {
+                warning("non-monotone score function")
             }
         }
         ### use Taylor approximation
         if (is.null(Sci))
-            Sci <- coef(object) + sqrt(vcov(object)[parm, parm]) * qnorm(c(alpha, 1 - alpha))
+            Sci <- coef(object)[parm] + 
+                sqrt(vcov(object)[parm, parm]) * qnorm(c(alpha, 1 - alpha))
 
         est <- coef(object)[parm]
         attr(Sci, "conf.level") <- level
@@ -384,12 +387,20 @@ score_test.tram <- function(object, parm = names(coef(object)),
         names(est) <- parameter
         ret$estimate <- est
     }
+    ret$parm <- parm
     class(ret) <- "htest"
     ret
 }
 
 confint.htest <- function(object, parm, level = .95, ...) {
-    ci <- object$conf.int
+    pf <- function(probs, digits = 3) 
+        paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits), "%")
+    a <- (1 - level)/2
+    a <- c(a, 1 - a)
+    pct <- pf(a)
+    ci <- matrix(object$conf.int, nrow = 1)
+    colnames(ci) <- pct
+    rownames(ci) <- object$parm
     if (is.null(ci)) return(NULL)
     stopifnot(attr(ci, "conf.level") == level)
     return(ci)
@@ -422,7 +433,7 @@ perm_test.default <- function(object, ...)
 perm_test.tram <- function(object, parm = names(coef(object)), 
     statistic = c("Score", "Likelihood", "Wald"),
     alternative = c("two.sided", "less", "greater"), 
-    nullvalue = 0, confint = FALSE, level = .95, 
+    nullvalue = 0, confint = TRUE, level = .95, 
     Taylor = FALSE, block_permutation = TRUE, maxsteps = 25, ...) {
 
     cf <- coef(object)
@@ -554,10 +565,12 @@ perm_test.tram <- function(object, parm = names(coef(object)),
                         s <- spline(x = grd, y = grd_sc, method = "hyman")
                         Sci <- approx(x = s$y, y = s$x, xout = qp)$y
                     }
+                } else {
+                    warning("non-monotone score function")
                 }
             } 
             if (is.null(Sci))
-                Sci <- coef(object) + sqrt(vcov(object)[parm, parm]) * qp
+                Sci <- coef(object)[parm] + sqrt(vcov(object)[parm, parm]) * qp
             
             attr(Sci, "conf.level") <- level
             attr(Sci, "achieved.conf.level") <- achieved

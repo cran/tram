@@ -1,8 +1,8 @@
 ## ----mtram-setup, echo = FALSE, results = "hide", message = FALSE, warning = FALSE----
 set.seed(290875)
 
-sapply(c("mlt", "survival", "tram", "lme4", "gridExtra", 
-         "lattice", "latticeExtra", "mvtnorm", "ordinalCont"), library, char = TRUE)
+pkgs <- sapply(c("mlt", "survival", "tram", "lme4", "gridExtra", 
+         "lattice", "latticeExtra", "mvtnorm", "ordinalCont"), require, char = TRUE)
 
 trellis.par.set(list(plot.symbol = list(col=1,pch=20, cex=0.7),
                      box.rectangle = list(col=1),
@@ -69,6 +69,15 @@ col <- diverge_hcl(2, h = c(246, 40), c = 120, l = c(65, 90), alpha = .75)
 ## ----mtram-citation, echo = FALSE----------------------------------------
 year <- substr(packageDescription("tram")$Date, 1, 4)
 version <- packageDescription("tram")$Version
+
+## ----fail, results = "asis", echo = FALSE--------------------------------
+if (any(!pkgs))
+{
+    cat(paste("Package(s)", paste(names(pkgs)[!pkgs], collapse = ", "), 
+        "not available, stop processing.",
+        "\\end{document}\n"))
+    knitr::knit_exit()
+}
 
 ## ----mtram-vignette, eval = FALSE----------------------------------------
 #  install.packages("tram")

@@ -12,13 +12,13 @@ importFrom("stats", "model.matrix", "coef", "vcov", "nobs", "predict", "quantile
            "logLik", "model.response", "model.weights", "model.offset", "terms", "as.formula",
            "printCoefmat", "qqline", "qqplot", "qunif", "variable.names", "pchisq",
            "model.frame", "pnorm", "qnorm", "sigma", "residuals", "qchisq", "approx", "spline",
-           "confint", "relevel", "resid", "ecdf")
+           "confint", "relevel", "resid", "ecdf", "dnorm", "weights")
 import("Matrix")
 importFrom("survival", "survfit", "Surv")
 importFrom("graphics", "plot", "lines", "polygon")
 
 export(tram, tram_data, Coxph, Aareg, Colr, Polr, Lm, BoxCox, Survreg, Lehmann, 
-       mtram, score_test, perm_test, PI)
+       mtram, score_test, perm_test, PI, mmlt)
 
 S3method("as.mlt", "tram")
 S3method("model.matrix", "tram")
@@ -45,3 +45,10 @@ S3method("score_test", "tram")
 S3method("perm_test", "tram")
 S3method("confint", "htest")
 S3method("confint", "htests")
+
+S3method("logLik", "mmlt")
+S3method("coef", "mmlt")
+S3method("vcov", "mmlt")
+S3method("predict", "mmlt")
+S3method("summary", "mmlt")
+S3method("print", "summary.mmlt")
