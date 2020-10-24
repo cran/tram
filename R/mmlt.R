@@ -188,7 +188,8 @@ mmlt <- function(..., formula = ~ 1, data, theta = NULL,
     
     cret <- vector(length = J - 1, mode = "list")
     for (k in 1:(J - 1)) {  # go over rows
-      om_Zk <- m[[k]]$todistr$dd2d
+      # om_Zk <- m[[k]]$todistr$dd2d
+      om_Zk <- m[[k+1]]$todistr$dd2d
       B1 <- matrix(rep(B[,k], k), ncol = k)
       tmp <- om_Zk(B1) * Yp[,1:k]
       ret <- c()
@@ -450,5 +451,14 @@ print.summary.mmlt <- function(x, digits = max(3L, getOption("digits") - 3L), ..
         P.values = TRUE, eps.Pvalue = sig)
     cat("\nLog-Likelihood:\n ", x$ll, " (df = ", attr(x$ll, "df"), ")", sep = "")
     cat("\n\n")
+    invisible(x)
+}
+
+print.mmlt <- function(x, ...) {
+    cat("\n", "Multivariate conditional transformation model", "\n")
+    cat("\nCall:\n")
+    print(x$call)
+    cat("\nCoefficients:\n")
+    print(coef(x))
     invisible(x)
 }
