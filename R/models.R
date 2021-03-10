@@ -40,14 +40,21 @@ Aareg <- function(formula, data, subset, weights, offset, cluster, na.action = n
 
     ### we need additional trafo(0) = 0 constraints 
     ### because trafo = cumhazard
-    ret <- tram(td, transformation = "smooth", 
-                distribution = "Exponential", 
-                negative = FALSE, model_only = TRUE, ...)
-
+    args <- list(...)
+    args$formula <- td
+    args$transformation <- "smooth"
+    args$distribution <- "Exponential"
+    args$negative <- FALSE
+    args$model_only <- TRUE
+    ret <- do.call("tram", args)
     ### always start at time 0, so that the first parameter 
     ### is trafo(0), which can then be constrained to zero
     su <- mkgrid(ret$model, n = 2)[[1]]
     su[1] <- 0
+    args$support <- su
+    ret <- do.call("tram", args)
+    if (isTRUE(list(...)$model_only)) return(ret)
+
     cf <- names(coef(ret))
     cf <- cf[grep("Bs1", cf)]
     ctr <- numeric(length(cf))
@@ -208,6 +215,8 @@ Polr <- function(formula, data, subset, weights, offset, cluster, na.action = na
     name <- c("logistic" = "Odds", "loglog" = "Reverse time hazards",
               "cloglog" = "Hazards")
 
+    ### <FIXME> maybe use as.basis(<response>, Matrix = TRUE) when nlevels
+    ### is large </FIXME>
     ret <- tram(td, transformation = "discrete", distribution = distribution, negative = TRUE, ...)
     if (!inherits(ret, "mlt")) return(ret)
     ret$call <- match.call(expand.dots = TRUE)
