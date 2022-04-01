@@ -32,12 +32,24 @@ model.matrix.tram <- function(object, data = object$data,
     ret
 }	
 
+model.matrix.stram <- function(object, data = object$data, 
+    with_baseline = FALSE, what = c("shifting", "scaling"), ...) {
+    if (with_baseline)
+        stop("no model.matrix method for class stram defined")
+    what <- match.arg(what)
+    switch(what, 
+        "shifting" = model.matrix.tram(object, 
+                                       with_baseline = with_baseline, ...),
+        "scaling" = model.matrix(object$model$model$bscaling, data = data,
+                                       with_baseline = FALSE, ...))
+}
+
 coef.tram <- function(object, with_baseline = FALSE, ...) 
 {
     cf <- coef(as.mlt(object), ...)
     if (with_baseline) return(cf)
-    if (is.null(object$shiftcoef)) return(NULL)
-    return(cf[names(cf) %in% object$shiftcoef])
+    if (is.null(object$shiftcoef) && is.null(object$scalecoef)) return(NULL)
+    return(cf[names(cf) %in% c(object$shiftcoef, object$scalecoef)])
 }
 
 coef.Lm <- function(object, as.lm = FALSE, ...) {
@@ -48,6 +60,8 @@ coef.Lm <- function(object, as.lm = FALSE, ...) {
 
     if (!is.null(object$stratacoef))
         stop("cannot compute scaled coefficients with strata")
+    if (!is.null(object$scalecoef))
+        stop("cannot compute scaled coefficients with scale term")
 
     cf <- coef(object, with_baseline = TRUE, ...)
     cfx <- coef(object, with_baseline = FALSE, ...)
@@ -80,12 +94,13 @@ vcov.tram <- function(object, with_baseline = FALSE, complete = FALSE, ...)
                                     cluster = object$cluster))
         }
     }
-    if (is.null(object$shiftcoef)) return(NULL)
+    if (is.null(object$shiftcoef) && is.null(object$scalecoef)) return(NULL)
    
     ### covariance matrix for shift terms only
     ### return Schur complement
     H <- Hessian(as.mlt(object), ...)
-    shift <- which(colnames(H) %in% object$shiftcoef)
+    cf <- c(object$shiftcoef, object$scalecoef)
+    shift <- which(colnames(H) %in% cf)
     Hlin <- H[shift, shift, drop = FALSE]
     Hbase <- H[-shift, -shift, drop = FALSE]
     Hoff <- H[shift, -shift, drop = FALSE]
@@ -96,7 +111,7 @@ vcov.tram <- function(object, with_baseline = FALSE, complete = FALSE, ...)
     ret <- solve(H)
     if (inherits(ret, "try-error"))
         return(vcov(as.mlt(object))[shift, shift])
-    nm <- object$shiftcoef
+    nm <- cf
     nm <- nm[!nm %in% names(object$fixed)]
     colnames(ret) <- rownames(ret) <- nm
     return(ret)
@@ -202,13 +217,6 @@ profile.tram <- function(fitted, which = 1:p, alpha = 0.01,
     diff <- sqrt(diag(vcov(fitted)))
     names(diff) <- Pnames
 
-    X <- model.matrix(fitted)
-    n <- NROW(X)
-    O <- fitted$offset
-    if(!length(O)) O <- rep(0, n)
-    W <- fitted$weights
-    if(length(W) == 0L) W <- rep(1, n)
-
     OriginalDeviance <- -2 * logLik(fitted)
     zmax <- sqrt(qchisq(1 - alpha, 1))
 
@@ -222,15 +230,6 @@ profile.tram <- function(fitted, which = 1:p, alpha = 0.01,
         fx <- 0
         names(fx) <- pi
 
-        ### set-up new model with fixed parameter pi such that
-        ### update can be called
-        theta <- coef(as.mlt(fitted))
-        theta <- theta[!names(theta) %in% pi]
-        fm <- m <- mlt(fitted$model, data = fitted$data, weights = W, 
-                       fixed = fx, theta = theta,
-                       scale = fitted$scale, 
-                       optim = fitted$optim)
-
         for(sgn in c(-1, 1)) {
             if(trace)
                 message("\nParameter: ", pi, " ",
@@ -240,11 +239,9 @@ profile.tram <- function(fitted, which = 1:p, alpha = 0.01,
 
             while((step <- step + 1) < maxsteps && abs(z) < zmax) {
                 bi <- B0[i] + sgn * step * del * diff[i]
-                o <- O + X[, i] * bi
-
+                fx[] <- bi
                 ### compute profile likelihood
-                fm <- update(m, weights = W, offset = o, 
-                             theta = coef(fm, fixed = FALSE))
+                fm <- update(fitted, fixed = fx)
                 pl <- logLik(fm)
 
                 ri <- pv0
@@ -304,19 +301,13 @@ score_test.tram <- function(object, parm = names(coef(object)),
 
     fx <- 0
     names(fx) <- parm
-    off <- object$offset
-    theta <- coef(as.mlt(object))
-    theta <- theta[names(theta) != parm]
-    m0 <- mlt(object$model, data = object$data, weights = object$weights,
-              offset = off, scale = object$scale, fixed = fx,
-              optim = object$optim, theta = theta)
-
     cf <- coef(m1)
-    X <- model.matrix(object)[, parm]
 
     sc <- function(b) {
-        cf[] <- coef(update(m0, offset = off + b * X))
+        fx[] <- b
+        cf[] <- coef(update(m1, fixed = fx)) ### works since mlt 1.4-1
         cf[parm] <- b
+        ### evaluate estfun/vcov for fixed parameter in m1
         coef(m1) <- cf
         ### see Lehmann, Elements of Large-sample Theory,
         ### 1999, 539-540, for score tests in the presence
@@ -502,7 +493,12 @@ perm_test.tram <- function(object, parm = names(coef(object)),
                   optim = object$optim, theta = theta)
 
         cf <- coef(m1)
-        X <- Xf <- model.matrix(object)[, parm]
+        SCALE <- inherits(object, "stram") && parm %in% object$scalecoef
+        if (SCALE) {
+            X <- Xf <- model.matrix(object, what = "scaling")[, parm]
+        } else {
+            X <- Xf <- model.matrix(object)[, parm]
+        }
         ### this is a hack and not really necessary but
         ### distribution = "exact" needs factors @ 2 levels
         ### use baseline level 1 such that p-values are increasing
@@ -510,10 +506,15 @@ perm_test.tram <- function(object, parm = names(coef(object)),
             Xf <- relevel(factor(X, levels = sort(unique(X)), 
                           labels = 0:1), "1")
 
-        cf[] <- c(coef(m0, fixed = FALSE), 0)
+        cf[] <- coef(m0)
         coef(m1) <- cf
         ### resid is weighted, remove weights and feed them to coin
-        r0 <- (resid(m1) / w) * sqrt(vcov.tram(m1)[parm,parm])
+        if (SCALE) {
+            rs <- resid(m1, what = "scaling")
+        } else {
+            rs <- resid(m1)
+        }
+        r0 <- (rs / w) * sqrt(vcov.tram(m1)[parm,parm])
         ###                          ^^^^^^^^^ uses Schur complement
         if (is.null(block)) {
             it0 <- coin::independence_test(r0 ~ Xf, teststat = "scalar", 
@@ -557,9 +558,10 @@ perm_test.tram <- function(object, parm = names(coef(object)),
             Sci <- NULL
             if (!Taylor) {
                 sc <- function(b) {
-                    cf[] <- coef(update(m0, offset = off + b * X, 
-                                        theta = theta))
+                    fx[] <- b
+                    cf[] <- coef(update(m1, fixed = fx)) ### since 1.4-1
                     cf[parm] <- b
+                    ### evaluate estfun/vcov for fixed parameter in m1
                     coef(m1) <- cf
                     ### see Lehmann, Elements of Large-sample Theory,
                     ### 1999, 539-540, for score tests in the presence
@@ -633,6 +635,9 @@ perm_test.tram <- function(object, parm = names(coef(object)),
         return(ret)
 
     } else {
+
+        if (inherits(object, "stram") && parm %in% object$scalecoef)
+            stop("Permutation Wald and Likelihood inference not implemented for scale parameters")
 
         if ("Wald" %in% statistic) {
             stopifnot(length(parm) == 1)
@@ -1392,3 +1397,287 @@ perm_test.glm <- function(object, parm = names(coef(object)),
 
 simulate.tram <- function(object, nsim = 1L, seed = NULL, ...)
     simulate(as.mlt(object), nsim = nsim, seed = seed, ...)
+
+PI <- function(object, ...)
+    UseMethod("PI")
+
+PI.tram <- function(object, newdata = model.frame(object), 
+                    reference = 0, one2one = FALSE, ...) {
+
+    beta <- .lp2x(object = object, newdata = newdata, reference = reference, 
+                FUN = .lp2PI(link = object$model$todistr$name), 
+                one2one = one2one, ...)
+    return(beta)
+}
+
+PI.stram <- function(object, ...)
+    stop("no PI method defined for objects of class stram")
+
+### convert lp to PI and back, use logistic as default
+PI.default <- function(object, prob, link = "logistic", ...) {
+
+    FUN <- .lp2PI(link = link)
+
+    if (missing(prob))
+        return(FUN(object))
+
+    object <- 1:999 / 50
+    s <- spline(x = object, y = FUN(object), method = "hyman")
+    wl5 <- (prob < .5 - .Machine$double.eps)
+    wg5 <- (prob > .5 + .Machine$double.eps)
+    ret <- numeric(length(prob))
+    if (any(wl5))
+        ret[wl5] <- - approx(x = s$y, y = s$x, xout = 1 - prob[wl5])$y
+    if (any(wg5))
+        ret[wg5] <- approx(x = s$y, y = s$x, xout = prob[wg5])$y
+    ret
+}
+
+OVL <- function(object, ...)
+    UseMethod("OVL")
+
+OVL.tram <- function(object, newdata = model.frame(object), 
+                     reference = 0, one2one = FALSE, ...) {
+
+    FUN <- .lp2OVL(link = object$model$todistr$name)
+    beta <- .lp2x(object = object, newdata = newdata, reference = reference, 
+                  FUN = function(x) x, one2one = one2one, ...)
+    
+    if ("Estimate" %in% colnames(beta)) {
+      # check if CI includes 0 and convert to OVL
+      lwr <- beta[, "lwr"]
+      upr <- beta[, "upr"]
+      olwr <- FUN(beta[, "lwr"])
+      oupr <- FUN(beta[, "upr"])
+      beta[, "upr"] <- ifelse(lwr > 0 & upr > 0, olwr,
+                              ifelse(lwr < 0 & upr < 0, oupr, 1))
+      beta[, "lwr"] <- ifelse(lwr > 0 & upr > 0, oupr,
+                              ifelse(lwr < 0 & upr < 0, olwr,
+                                     pmin(olwr, oupr)))
+      beta[, "Estimate"] <- FUN(beta[, "Estimate"])
+      return(beta)
+    } else {
+      return(FUN(beta))
+    }
+}
+
+OVL.stram <- function(object, ...)
+    stop("no OVL method defined for objects of class stram")
+
+### convert lp to OVL
+OVL.default <- function(object, link = "logistic", ...) {
+  
+    FUN <- .lp2OVL(link = link)
+    FUN(object)
+}
+
+TV <- function(object, ...)
+    UseMethod("TV")
+
+TV.tram <- function(object, newdata = model.frame(object), 
+                    reference = 0, one2one = FALSE, ...) {
+
+    ret <- OVL(object = object, newdata = newdata, reference = reference, 
+               one2one = one2one, ...)
+    ### <FIXME> make sure lwr < upr </FIXME>
+    1 - ret    
+}
+
+TV.stram <- function(object, ...)
+    stop("no TV method defined for objects of class stram")
+
+### convert lp to TV
+TV.default <- function(object, link = "logistic", ...) {
+  
+    1 - OVL(object, link)
+}
+
+L1 <- function(object, ...)
+    UseMethod("L1")
+
+L1.tram <- function(object, newdata = model.frame(object), 
+                    reference = 0, one2one = FALSE, ...) {
+
+    ret <- OVL(object = object, newdata = newdata, reference = reference, 
+               one2one = one2one, ...)
+    ### <FIXME> make sure lwr < upr </FIXME>
+    2 * (1 - ret)
+}
+
+L1.stram <- function(object, ...)
+    stop("no L1 method defined for objects of class stram")
+
+### convert lp to L1
+L1.default <- function(object, link = "logistic", ...) {
+  
+    2 * (1 - OVL(object, link))
+}
+
+ROC <- function(object, ...)
+    UseMethod("ROC")
+
+ROC.tram <- function(object, newdata = model.frame(object), reference = 0,
+                     prob = 1:99 / 100, one2one = FALSE, ...) {
+
+    beta <- .lp2x(object = object, newdata = newdata, reference = reference, 
+                  FUN = function(x) x, one2one = one2one, ...)
+    roc <- function(prob, beta) 
+        1 - object$model$todistr$p(object$model$todistr$q(1 - prob) - beta)
+
+    lwr <- upr <- NULL
+    if (inherits(beta, "dist"))
+        beta <- c(beta)
+    if ("Estimate" %in% colnames(beta)) {
+        lwr <- beta[, "lwr"]
+        upr <- beta[, "upr"]
+        beta <- beta[, "Estimate"]
+    }
+
+    ret <- outer(c(prob), c(beta), roc)
+    if (!is.null(lwr) & !is.null(upr))
+        attr(ret, "conf.band") <- list(lwr = outer(prob, lwr, roc), 
+                                       upr = outer(prob, upr, roc))
+    attr(ret, "prob") <- prob
+    class(ret) <- "ROCtram"
+    ret
+}
+
+ROC.stram <- function(object, ...)
+    stop("no ROC method defined for objects of class stram")
+
+### lp to ROC
+ROC.default <- function(object, prob = 1:99 / 100, link = "logistic", ...){
+    
+    pfun <- .pfun(link)
+    qfun <- .qfun(link)
+    roc <- function(prob, beta) 1 - pfun(qfun(1 - prob) - beta)
+    ret <- outer(c(prob), c(object), roc)
+    attr(ret, "prob") <- prob
+    class(ret) <- "ROCtram"
+    ret
+}
+
+.lp2x <- function(object, newdata = model.frame(object), reference = 0, FUN, 
+                  conf.level = 0, one2one = FALSE, ...) {
+
+    ### <FIXME>: applies within strata, but response-varying coefficients
+    ### are not allowed -> add check </FIXME>
+
+    if (conf.level > 0) {
+        X <- model.matrix(object, data = newdata)
+        if (is.data.frame(reference)) {
+            Xr <- model.matrix(object, data = reference)
+        } else {
+            if (is.null(reference)) {
+                Xr <- X
+            } else {
+                Xr <- reference
+                K <- Xr - X
+                ret <- confint(glht(object, linfct = K), ...)
+                return(FUN(ret$confint))
+            }
+        }
+
+        if (one2one) {
+            stopifnot(nrow(X) == nrow(Xr))
+            i1 <- i2 <- 1:nrow(X)
+
+        } else {
+            i1 <- matrix(1:nrow(Xr), nrow = nrow(Xr), ncol = nrow(X))
+            i2 <- matrix(rep(1:nrow(X), each = nrow(Xr)), nrow = nrow(Xr))
+            if (isTRUE(all.equal(X, Xr))) {
+                i1 <- i1[upper.tri(i1)]
+                i2 <- i2[upper.tri(i2)]
+            }
+        }
+        K <- Xr[c(i1),, drop = FALSE] - X[c(i2),, drop = FALSE]
+        rownames(K) <- paste0(rownames(Xr)[i1], "-", rownames(X)[i2])
+        ret <- confint(glht(object, linfct = K), ...)
+        return(FUN(ret$confint))
+    }
+
+    lp <- predict(object, newdata = newdata, type = "lp")
+    if (is.data.frame(reference)) {
+        rf <- predict(object, newdata = reference, type = "lp")
+    } else {
+        if (is.null(reference)) {
+            rf <- lp
+        } else {
+            rf <- reference
+        }
+    }
+
+    if (one2one) {
+        ret <- c(rf - lp)
+    } else {
+        if (isTRUE(all.equal(lp, rf))) {
+            ret <- c(1, -1)[object$negative + 1L] * dist(lp, diag = FALSE)
+        } else {
+            ret <- outer(c(rf), c(lp), "-")
+        }
+    }
+    FUN(c(1, -1)[object$negative + 1L] * ret)
+}
+
+.lp2PI <- function(link = c("normal", "logistic", "minimum extreme value", 
+                            "maximum extreme value")) {
+
+    link <- match.arg(link)
+    switch(link,
+        normal = function(x) pnorm(x / sqrt(2)),
+        logistic = function(x) {
+            OR <- exp(x)
+            ret <- OR * (OR - 1 - x)/(OR - 1)^2
+            ret[abs(x) < .Machine$double.eps] <- 0.5
+            return(ret)
+        },
+        "minimum extreme value" = function(x) plogis(x),
+        "maximum extreme value" = function(x) plogis(x)
+    )
+}
+
+
+.lp2OVL <- function(link = c("normal", "logistic", "minimum extreme value", 
+                              "maximum extreme value")) {
+
+    link <- match.arg(link)
+
+    switch(link, 
+        "normal" = function(x) 2 * pnorm(-abs(x / 2)),
+        "logistic" = function(x) 2 * plogis(-abs(x / 2)),
+        "minimum extreme value" = function(x) {
+            x <- abs(x)
+            ret <- exp(x / (exp(-x) - 1)) - exp(-x / (exp(x) - 1)) + 1 
+            ret[abs(x) < .Machine$double.eps] <- 1
+            x[] <- ret
+            return(x)
+        },
+        "maximum extreme value" = function(x) {
+            x <- abs(x)
+            rt <- exp(-x / (exp(x) - 1))
+            ret <- rt^exp(x) + 1 - rt
+            ret[abs(x) < .Machine$double.eps] <- 1
+            x[] <- ret
+            return(x)
+        })
+}
+
+.pfun <- function(link = c("normal", "logistic", "minimum extreme value", 
+                          "maximum extreme value")) {
+    switch(link,
+           "normal" = pnorm,
+           "logistic" = plogis,
+           "minimum extreme value" = function(z) 1 - exp(-exp(z)),
+           "maximum extreme value" = function(z) exp(-exp(-z))
+           )
+}
+
+.qfun <- function(link = c("normal", "logistic", "minimum extreme value", 
+                           "maximum extreme value")) {
+    switch(link, 
+           "normal" = qnorm,
+           "logistic" = qlogis,
+           "minimum extreme value" = function(p) log(-log1p(- p)),
+           "maximum extreme value" = function(p) -log(-log(p))
+           )
+}

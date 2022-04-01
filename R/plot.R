@@ -80,3 +80,30 @@ plot.tram <- function(x, newdata = model.frame(x),
         }
     }
 }
+
+plot.ROCtram <- function(x, lty = 1:ncol(x), 
+    col = "black", fill = "lightgrey", lwd = 1, ...) {
+
+    prob <- attr(x, "prob")
+    plot(0, 1, xlim = c(0, 1), ylim = c(0, 1), type = "n", 
+         xlab = "1 - Specificity", ylab = "Sensitivity", ...)
+    abline(a = 0, b = 1, col = "lightgrey")
+    if (length(fill) != ncol(x)) 
+        fill <- rep(fill, length.out = ncol(x))
+    if (length(col) != ncol(x)) 
+        col <- rep(col, length.out = ncol(x))
+    if (length(lty) != ncol(x)) 
+        lty <- rep(lty, length.out = ncol(x))
+
+    for (i in 1:ncol(x))
+        lines(c(0, prob, 1), c(0, x[, i], 1), lty = lty[i])
+    cb <- attr(x, "conf.band")
+    if (!is.null(cb)) {
+        for (i in 1:ncol(cb$lwr))
+            .add_confband(cbind(q = c(0, prob, 1), 
+                                Estimate = c(0, x[,i], 1),
+                                lwr = c(0, cb$lwr[, i], 1), 
+                                upr = c(0, cb$upr[, i], 1)),
+                          fill = fill[i], col = col[i], ...)
+    }
+}
