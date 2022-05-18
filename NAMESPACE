@@ -6,14 +6,14 @@ import("variables")
 import("basefun")
 import("Formula")
 importFrom("methods", "as")
-importFrom("sandwich", "vcovCL", "estfun")
+importFrom("sandwich", "vcovCL", "estfun", "bread")
 importFrom("multcomp", "cftest", "adjusted_calpha", "univariate_calpha", "glht")
 importFrom("stats", "model.matrix", "coef", "vcov", "nobs", "predict", "quantile", "na.omit",
            "logLik", "model.response", "model.weights", "model.offset", "terms", "as.formula",
            "printCoefmat", "qqline", "qqplot", "qunif", "variable.names", "pchisq",
            "model.frame", "pnorm", "qnorm", "sigma", "residuals", "qchisq", "approx", "spline",
            "confint", "relevel", "resid", "ecdf", "dnorm", "weights", "lm", "simulate", 
-           "plogis", "qlogis", "dist")
+           "plogis", "qlogis", "dist", "uniroot")
 import("Matrix")
 importFrom("survival", "survfit", "Surv", "coxph.control")
 importFrom("graphics", "plot", "lines", "polygon", "abline")
@@ -35,7 +35,9 @@ S3method("Gradient", "tram")
 S3method("Hessian", "tram")
 S3method("logLik", "mtram")
 S3method("estfun", "tram")
+S3method("bread", "tram")
 S3method("predict", "tram")
+S3method("predict", "stram")
 S3method("summary", "tram")
 S3method("model.frame", "tram")
 S3method("terms", "tram")

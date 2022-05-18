@@ -38,7 +38,7 @@ model.matrix.stram <- function(object, data = object$data,
         stop("no model.matrix method for class stram defined")
     what <- match.arg(what)
     switch(what, 
-        "shifting" = model.matrix.tram(object, 
+        "shifting" = model.matrix.tram(object, data = data,
                                        with_baseline = with_baseline, ...),
         "scaling" = model.matrix(object$model$model$bscaling, data = data,
                                        with_baseline = FALSE, ...))
@@ -135,6 +135,9 @@ Gradient.tram <- function(object, parm = coef(as.mlt(object), fixed = FALSE), ..
 estfun.tram <- function(object, parm = coef(as.mlt(object), fixed = FALSE), ...)
     estfun(as.mlt(object), parm = parm, ...)
 
+bread.tram <- function(x, ...)
+    bread(as.mlt(x), ...)
+
 predict.tram <- function(object, newdata = model.frame(object), 
     type = c("lp", "trafo", "distribution", "survivor", "density", 
              "logdensity", "hazard", "loghazard", "cumhazard", "quantile"), ...) {
@@ -148,6 +151,38 @@ predict.tram <- function(object, newdata = model.frame(object),
     }
     predict(as.mlt(object), newdata = newdata, type = type, ...)
 }
+
+predict.stram <- function(object, newdata = model.frame(object), 
+    type = c("lp", "trafo", "distribution", "survivor", "density", 
+             "logdensity", "hazard", "loghazard", "cumhazard", "quantile"), 
+             what = c("shifting", "scaling"), ...) {
+
+    type <- match.arg(type)
+    if (type == "lp") {
+        what <- match.arg(what)
+        if (what == "shifting") {
+            if (is.null(object$shiftcoef))
+                stop("object does not contain a shift term")
+            ret <- model.matrix(object, data = newdata, what = "shifting") %*% 
+                   coef(object, with_baseline = FALSE)[object$shiftcoef]
+            if (object$negative) return(-ret)
+            return(ret)
+        }
+        if (what == "scaling") {
+            if (is.null(object$scalecoef))
+            stop("object does not contain a scale term")
+            ret <- model.matrix(object, data = newdata, what = "scaling") %*% 
+                   coef(object, with_baseline = FALSE)[object$scalecoef]
+            ### <FIXME>: scale term always positive?
+            # if (object$negative) return(-ret)
+            ### </FIXME>
+            return(ret)
+        }
+    }
+
+    predict(as.mlt(object), newdata = newdata, type = type, ...)
+}
+
 
 print.tram <- function(x, ...) {
     cat("\n", x$tram, "\n")
@@ -1416,21 +1451,15 @@ PI.stram <- function(object, ...)
 ### convert lp to PI and back, use logistic as default
 PI.default <- function(object, prob, link = "logistic", ...) {
 
-    FUN <- .lp2PI(link = link)
-
-    if (missing(prob))
+    if (missing(prob)) {
+        FUN <- .lp2PI(link = link)
         return(FUN(object))
-
-    object <- 1:999 / 50
-    s <- spline(x = object, y = FUN(object), method = "hyman")
-    wl5 <- (prob < .5 - .Machine$double.eps)
-    wg5 <- (prob > .5 + .Machine$double.eps)
-    ret <- numeric(length(prob))
-    if (any(wl5))
-        ret[wl5] <- - approx(x = s$y, y = s$x, xout = 1 - prob[wl5])$y
-    if (any(wg5))
-        ret[wg5] <- approx(x = s$y, y = s$x, xout = prob[wg5])$y
-    ret
+    } else {
+        if (!missing(object))
+            stop("both object and prob arguments specified")
+        FUN <- .PI2lp(link = link)
+        return(FUN(prob))
+    }
 }
 
 OVL <- function(object, ...)
@@ -1636,6 +1665,23 @@ ROC.default <- function(object, prob = 1:99 / 100, link = "logistic", ...){
     )
 }
 
+.PI2lp <- function(link = c("normal", "logistic", "minimum extreme value", 
+                            "maximum extreme value")) {
+
+    link <- match.arg(link)
+    switch(link,
+        normal = function(PI) qnorm(PI) * sqrt(2),
+        logistic = function(PI) {
+            f <- function(x, PI)
+                x + (exp(-x) * (PI + exp(2 * x) * (PI - 1) + exp(x)* (1 - 2 * PI)))
+            ret <- sapply(PI, function(p) 
+                uniroot(f, PI = p, interval = 50 * c(-1, 1))$root)
+            return(ret)
+        },
+        "minimum extreme value" = function(PI) qlogis(PI),
+        "maximum extreme value" = function(PI) qlogis(PI)
+    )
+}
 
 .lp2OVL <- function(link = c("normal", "logistic", "minimum extreme value", 
                               "maximum extreme value")) {
