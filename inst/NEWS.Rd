@@ -2,6 +2,17 @@
 \name{NEWS}
 \title{NEWS file for the tram package}
 
+\section{Changes in Version 0.8-0 (2022-11-02)}{
+  \itemize{
+    \item{Stabilise and generalise \code{mmlt}: Alternative link functions, 
+          separate lower triangular matrix storage and computations from
+          \code{mmlt}.}
+    \item{\code{coef(<mmlt>, type = "Sigma")} and \code{coef(<mmlt>, type = "Corr")}
+          were incorrect for more than three dimensions.}
+    \item{Improved numerical stability in \code{mtram}.}
+  }
+}
+
 \section{Changes in Version 0.7-2 (2022-08-05)}{
   \itemize{
     \item{New location-scale functionality, see \code{demo("stram")}.}
@@ -9,6 +20,7 @@
     \item{New cauchit link function.}
   }
 }
+
 
 \section{Changes in Version 0.7-1 (2022-05-18)}{
   \itemize{
