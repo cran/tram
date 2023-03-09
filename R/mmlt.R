@@ -290,7 +290,7 @@ mmlt <- function(..., formula = ~ 1, data, conditional = GAUSSIAN,
       start <- c(start$mpar, c(t(start$cpar)))
     }
   }
-  
+ 
   if (scale) {
     Ytmp <- cbind(do.call("cbind", lapply(lu, function(m) m$exact)), 
                   kronecker(matrix(1, ncol = Jp), lX))
@@ -559,4 +559,141 @@ print.mmlt <- function(x, ...) {
     cat("\nDiagonal:\n", "elements are constrained to 1.\n")
     }
   invisible(x)
+}
+
+simulate.mmlt <- function(object, nsim = 1L, seed = NULL, newdata, K = 50, ...) {
+
+    ### from stats:::simulate.lm
+    if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) 
+        runif(1)
+    if (is.null(seed)) 
+        RNGstate <- get(".Random.seed", envir = .GlobalEnv)
+    else {
+        R.seed <- get(".Random.seed", envir = .GlobalEnv)
+        set.seed(seed)
+        RNGstate <- structure(seed, kind = as.list(RNGkind()))
+        on.exit(assign(".Random.seed", R.seed, envir = .GlobalEnv))
+    }
+
+    if (!is.data.frame(newdata))
+        stop("not yet implemented")
+
+    args <- list(...)
+    if (length(args) > 0L)
+        stop("argument(s)", paste(names(args), collapse = ", "), "ignored")
+
+    if (nsim > 1L) 
+        return(replicate(nsim, simulate(object, newdata = newdata, K = K, ...), 
+                         simplify = FALSE))
+
+    J <- length(object$marginals)
+    L <- coef(object, newdata = newdata, type = "Lambda")
+    N <- nrow(newdata)
+
+    Z <- matrix(rnorm(J * N), ncol = J)
+    Ztilde <- .mult(solve(L), Z)
+
+    ret <- matrix(0.0, nrow = N, ncol = J)
+
+    if (object$conditional) {
+        for (j in 1:J) {
+            q <- mkgrid(object$marginals[[j]], n = K)[[1L]]
+            pr <- predict(object$marginals[[j]], newdata = newdata, type = "trafo", q = q)
+            if (!is.matrix(pr)) pr <- matrix(pr, nrow = length(pr), ncol = NROW(newdata))
+            ret[,j] <- as.double(mlt:::.invf(object$marginals[[j]], f = t(pr), 
+                                             q = q, z = Ztilde[,j,drop = FALSE]))
+        }
+    } else {
+        dvc <- sqrt(diagonals(coef(object, newdata = newdata, type = "Sigma")))
+        Ztilde <- pnorm(Ztilde / dvc, log.p = TRUE)
+        for (j in 1:J) {
+            q <- mkgrid(object$marginals[[j]], n = K)[[1L]]
+            pr <- predict(object$marginals[[j]], newdata = newdata, type = "logdistribution", q = q)
+            if (!is.matrix(pr)) pr <- matrix(pr, nrow = length(pr), ncol = NROW(newdata))
+            ret[,j] <- as.double(mlt:::.invf(object$marginals[[j]], f = t(pr), 
+                                             q = q, z = Ztilde[,j,drop = FALSE]))
+        }
+    }
+    colnames(ret) <- variable.names(object, response_only = TRUE)
+    return(ret)
+}
+
+variable.names.mmlt <- function(object, response_only = FALSE, ...) {
+
+    if (response_only)
+        return(sapply(object$marginals, function(x) variable.names(x)[1L]))
+    vn <- unique(c(sapply(object$marginals, function(x) variable.names(x)), 
+                 all.vars(object$formula)))
+    return(vn)
+}
+    
+confregion <- function(object, level = .95, ...)
+    UseMethod("confregion")
+
+confregion.mmlt <- function(object, level = .95, newdata, K = 250, ...) {
+
+    if (!missing(newdata)) stopifnot(nrow(newdata) == 1)
+
+    if (object$conditional) {
+        Linv <- coef(object, newdata = newdata, type = "Lambdainv")
+        Linv <- as.array(Linv)[,,1]
+    } else {
+        CR <- as.array(coef(object, newdata = newdata, type = "Corr"))[,,1]
+        Linv <- t(chol(CR))
+    }
+    J <- nrow(Linv)
+
+    q <- qchisq(level, df = J)
+
+    if (J == 2) {
+        angle <- seq(0, 2 * pi, length = K)
+        x <- cbind(cos(angle), sin(angle))
+    } else {
+        x <- matrix(rnorm(K * J), nrow = K, ncol = J)
+        x <- x / sqrt(rowSums(x^2))
+    }
+    x <- sqrt(q) * x
+    a <- x %*% t(Linv)
+
+    nd <- if (missing(newdata)) data.frame(1) else newdata
+
+    ret <- lapply(1:J, function(j) {
+        prb <- object$marginals[[j]]$todistr$p(a[,j])
+        predict(object$marginals[[j]], newdata = nd, type = "quantile", prob = prb)
+    })
+    
+    ret <- do.call("cbind", ret)
+    return(ret)
+}
+
+HDR <- function(object, level = .95, ...)
+    UseMethod("HDR")
+
+HDR.mmlt <- function(object, level = .95, newdata, nsim = 1000L, K = 25, ...) {
+
+    if (!missing(newdata)) {
+        stopifnot(nrow(newdata) == 1)
+    } else {
+        newdata <- data.frame(1)
+    }
+
+    ### https://doi.org/10.2307/2684423 Section 3.2
+    y <- simulate(object, newdata = newdata[rep(1, nsim),,drop = FALSE])
+    y <- cbind(y, newdata)
+    d <- predict(object, newdata = y, type = "density")
+
+    ret <- do.call("expand.grid", lapply(object$marginals, function(x) mkgrid(x, n = K)[[1L]]))
+    colnames(ret) <- variable.names(object, response_only = TRUE)
+    ret <- cbind(ret, newdata)
+    ret$density <- predict(object, newdata = ret, type = "density")
+    attr(ret, "cuts") <- quantile(d, prob = 1 - level)
+    ret
+}
+
+mkgrid.mmlt <- function(object, ...) {
+
+    lx <- mkgrid(as.basis(object$formula, data = object$data), ...)
+    grd <- do.call("c", lapply(object$marginals, mkgrid, ...))
+    grd <- c(grd, lx)
+    do.call("expand.grid", grd[unique(names(grd))])
 }

@@ -111,6 +111,8 @@ vcov.tram <- function(object, with_baseline = FALSE, complete = FALSE, ...)
     ret <- solve(H)
     if (inherits(ret, "try-error"))
         return(vcov(as.mlt(object))[shift, shift])
+    if (any(diag(ret) < 0))
+        return(vcov(as.mlt(object))[shift, shift])
     nm <- cf
     nm <- nm[!nm %in% names(object$fixed)]
     colnames(ret) <- rownames(ret) <- nm
@@ -132,8 +134,8 @@ Hessian.tram <- function(object, parm = coef(as.mlt(object), fixed = FALSE), ...
 Gradient.tram <- function(object, parm = coef(as.mlt(object), fixed = FALSE), ...)
    Gradient(as.mlt(object), parm = parm, ...)
 
-estfun.tram <- function(object, parm = coef(as.mlt(object), fixed = FALSE), ...)
-    estfun(as.mlt(object), parm = parm, ...)
+estfun.tram <- function(x, parm = coef(as.mlt(x), fixed = FALSE), ...)
+    estfun(as.mlt(x), parm = parm, ...)
 
 bread.tram <- function(x, ...)
     bread(as.mlt(x), ...)

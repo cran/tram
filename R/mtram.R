@@ -65,10 +65,6 @@ mtram <- function(object, formula, data,
     
     gr <- NULL
     
-    ### catch constraint violations here
-    .log <- function(x) 
-        log(pmax(.Machine$double.eps, x))
-    
     ## continuous case
     if (length(eY$which) > 0) {
         L <- Cholesky(crossprod(Lambdat %*% ZtW), LDL = FALSE, Imult = 1)
@@ -215,9 +211,9 @@ mtram <- function(object, formula, data,
             gamma <- parm[-(1:ncol(iY$Yleft))]
             Lambdat@x[] <- mapping(gamma)
             lplower <- c(iY$Yleft %*% theta + offset)
-            lplower[is.na(lplower)] <- -Inf
+            lplower[!is.finite(lplower)] <- -Inf
             lpupper <- c(iY$Yright %*% theta + offset)
-            lpupper[is.na(lpupper)] <- Inf
+            lpupper[!is.finite(lpupper)] <- Inf
             
             ## don't spend time on Matrix dispatch
             mLt <- t(as(Lambdat[wh, wh], "matrix"))
