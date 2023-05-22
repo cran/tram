@@ -1,11 +1,13 @@
 
-R version 4.2.0 (2022-04-22) -- "Vigorous Calisthenics"
-Copyright (C) 2022 The R Foundation for Statistical Computing
+R version 4.3.0 (2023-04-21) -- "Already Tomorrow"
+Copyright (C) 2023 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
 Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
 
 R is a collaborative project with many contributors.
 Type 'contributors()' for more information and
@@ -83,7 +85,7 @@ Loading required package: mlbench
 +   tm <- Lm(y ~ x1 | x2, data = d, scale_shift = TRUE)
 + 
 +   ### same model, via gamlss
-+   gm <- gamlss(y ~ x1, sigma.formula = ~ x2, data = d, family = NO2)
++   gm <- gamlss(y ~ x1, sigma.formula = ~ x2, data = d, family = NO2, trace = FALSE)
 +   chk(logLik(gm), logLik(tm))
 +   chk(-coef(tm)["scl_x2"], coefAll(gm)[[2]]["x2"])
 + 
@@ -160,9 +162,6 @@ Loading required package: mlbench
 +   chk(-coef(tm)["scl_x2"] / sqrt(vcov(tm)["scl_x2", "scl_x2"]),
 +       coefAll(gm)[[2]]["x2"] / sqrt(vcov(gm)["x2", "x2"]))
 + }
-GAMLSS-RS iteration 1: Global Deviance = 4238.665 
-GAMLSS-RS iteration 2: Global Deviance = 4238.641 
-GAMLSS-RS iteration 3: Global Deviance = 4238.641 
 > 
 > ### predict
 > 
@@ -217,12 +216,8 @@ attr(,"achieved.conf.level")
 > 
 > ### check residuals
 > m0 <- Lm(y ~ 1, data = d)
-> r <- resid(m0)
 > rs <- c(estfun(as.mlt(m0)) %*% coef(as.mlt(m0))) * .5
-> m <- Lm(y ~ one | one, data = d, fixed = c("one" = 0, "scl_one" = 0))
-> r2 <- resid(m)
-> rs2 <- resid(m, what = "scaling")
-> chk(r, r2)
+> rs2 <- resid(m0, what = "scaling")
 > chk(rs, rs2)
 > 
 > ### residuals, nonparametrically
@@ -235,12 +230,8 @@ attr(,"achieved.conf.level")
 > 
 > d$yR <- R(y, as.R.ordered = TRUE)
 > m0 <- Polr(yR ~ 1, data = d)
-> r <- resid(m0)
 > rs <- c(estfun(as.mlt(m0)) %*% coef(as.mlt(m0))) * .5
-> m <- Polr(yR ~ one | one, data = d, fixed = c("one" = 0, "scl_one" = 0))
-> r2 <- resid(m)
-> rs2 <- resid(m, what = "scaling")
-> chk(r, r2)
+> rs2 <- resid(m0, what = "scaling")
 > chk(rs, rs2)
 > 
 > ### linear predictor
@@ -258,4 +249,4 @@ attr(,"achieved.conf.level")
 > 
 > proc.time()
    user  system elapsed 
-  4.689   0.103   4.801 
+  6.629   0.144   6.758 

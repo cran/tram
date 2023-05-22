@@ -1,7 +1,7 @@
 Package: tram
 Title: Transformation Models
-Version: 0.8-2
-Date: 2023-03-28
+Version: 0.8-3
+Date: 2023-05-22
 Authors@R: c(person("Torsten", "Hothorn", role = c("aut", "cre"),
                     email = "Torsten.Hothorn@R-project.org", comment = c(ORCID = "0000-0001-8301-0471")),
              person("Luisa", "Barbanti", role = "aut",
@@ -18,10 +18,11 @@ Description: Formula-based user-interfaces to specific transformation models
   normal and non-normal (Box-Cox type) linear models, and continuous outcome logistic regression
   (Lohse et al., 2017, <DOI:10.12688/f1000research.12934.1>). The underlying theory
   is described in Hothorn et al. (2018) <DOI:10.1111/sjos.12291>. An extension to
-  transformation models for clustered data is provided (Barbanti and Hothorn, 2022, <arxiv:1910.09219>).
-  Multivariate conditional transformation models (Klein et al, 2022, <DOI:10.1111/sjos.12501>) 
-  can be fitted as well.
-Depends: R (>= 3.5.0), mlt (>= 1.4-3)
+  transformation models for clustered data is provided (Barbanti and Hothorn, 2022,
+  <DOI:10.1093/biostatistics/kxac048>). Multivariate conditional transformation models 
+  (Klein et al, 2022, <DOI:10.1111/sjos.12501>) and shift-scale transformation models (Siegfried et al, 2023,
+  <DOI:10.1080/00031305.2023.2203177>) can be fitted as well.
+Depends: R (>= 3.5.0), mlt (>= 1.4-7)
 Imports: Formula, multcomp, variables (>= 1.0-4), basefun (>= 1.1-2),
         sandwich, stats, survival, graphics, Matrix, methods, mvtnorm
 Suggests: MASS, TH.data, trtf (>= 0.3-3), mlbench, knitr, quantreg,
@@ -33,7 +34,7 @@ URL: http://ctm.R-forge.R-project.org
 Encoding: UTF-8
 License: GPL-2
 NeedsCompilation: yes
-Packaged: 2023-03-28 15:40:29 UTC; hothorn
+Packaged: 2023-05-22 11:06:11 UTC; hothorn
 Author: Torsten Hothorn [aut, cre] (<https://orcid.org/0000-0001-8301-0471>),
   Luisa Barbanti [aut] (<https://orcid.org/0000-0001-5352-5802>),
   Sandra Siegfried [aut] (<https://orcid.org/0000-0002-7312-1001>),
@@ -43,4 +44,4 @@ Author: Torsten Hothorn [aut, cre] (<https://orcid.org/0000-0001-8301-0471>),
   Nadja Klein [ctb]
 Maintainer: Torsten Hothorn <Torsten.Hothorn@R-project.org>
 Repository: CRAN
-Date/Publication: 2023-03-28 16:40:02 UTC
+Date/Publication: 2023-05-22 19:20:02 UTC

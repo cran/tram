@@ -62,7 +62,7 @@ if (suppressPackageStartupMessages(require("gamlss"))) {
   tm <- Lm(y ~ x1 | x2, data = d, scale_shift = TRUE)
 
   ### same model, via gamlss
-  gm <- gamlss(y ~ x1, sigma.formula = ~ x2, data = d, family = NO2)
+  gm <- gamlss(y ~ x1, sigma.formula = ~ x2, data = d, family = NO2, trace = FALSE)
   chk(logLik(gm), logLik(tm))
   chk(-coef(tm)["scl_x2"], coefAll(gm)[[2]]["x2"])
 
@@ -186,12 +186,8 @@ round(perm_test(m2, "x1")$conf, 3)
 
 ### check residuals
 m0 <- Lm(y ~ 1, data = d)
-r <- resid(m0)
 rs <- c(estfun(as.mlt(m0)) %*% coef(as.mlt(m0))) * .5
-m <- Lm(y ~ one | one, data = d, fixed = c("one" = 0, "scl_one" = 0))
-r2 <- resid(m)
-rs2 <- resid(m, what = "scaling")
-chk(r, r2)
+rs2 <- resid(m0, what = "scaling")
 chk(rs, rs2)
 
 ### residuals, nonparametrically
@@ -204,12 +200,8 @@ d <- data.frame(y = y, x1 = x1, x2 = x2, one = 1)
 
 d$yR <- R(y, as.R.ordered = TRUE)
 m0 <- Polr(yR ~ 1, data = d)
-r <- resid(m0)
 rs <- c(estfun(as.mlt(m0)) %*% coef(as.mlt(m0))) * .5
-m <- Polr(yR ~ one | one, data = d, fixed = c("one" = 0, "scl_one" = 0))
-r2 <- resid(m)
-rs2 <- resid(m, what = "scaling")
-chk(r, r2)
+rs2 <- resid(m0, what = "scaling")
 chk(rs, rs2)
 
 ### linear predictor

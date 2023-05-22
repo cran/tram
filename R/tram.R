@@ -111,7 +111,8 @@ tram <- function(formula, data, subset, weights, offset, cluster, na.action = na
                  transformation = c("discrete", "linear", "logarithmic", "smooth"),
                  LRtest = TRUE, 
                  prob = c(.1, .9), support = NULL, bounds = NULL, add = c(0, 0), order = 6, negative =
-                 TRUE, scale = TRUE, scale_shift = FALSE, extrapolate = FALSE, log_first = FALSE, 
+                 TRUE, remove_intercept = TRUE, 
+                 scale = TRUE, scale_shift = FALSE, extrapolate = FALSE, log_first = FALSE, 
                  sparse_nlevels = Inf, model_only = FALSE, 
                  constraints = NULL, ...) 
 {
@@ -139,7 +140,8 @@ tram <- function(formula, data, subset, weights, offset, cluster, na.action = na
             rvar$bounds[1] <- sqrt(.Machine$double.eps)
     }
     rbasis <- mkbasis(rvar, transformation = transformation, order = order,
-                      extrapolate = extrapolate, log_first = log_first)
+                      extrapolate = extrapolate, log_first = log_first,
+                      remove_intercept = !remove_intercept)
 
     iS <- NULL
     if (!is.null(td$mt$s)) {
@@ -181,9 +183,14 @@ tram <- function(formula, data, subset, weights, offset, cluster, na.action = na
             ui <- ci <- NULL
         }
         ### NOTE: this triggers sumconstr = TRUE
-        iX <- as.basis(td$mt$x, data = td$mf, remove_intercept = TRUE, 
+        ### when there is no scale term. Otherwise h is centered and we
+        ### need an explicit intercept here.
+        iX <- as.basis(td$mt$x, data = td$mf, 
+                       remove_intercept = remove_intercept,
                        negative = negative, ui = ui, ci = ci)
-    } 
+    } else {
+        if (!remove_intercept) iX <- intercept_basis(negative = negative)
+    }
 
     isX <- NULL
     if (!is.null(td$mt$z)) {
@@ -250,7 +257,14 @@ tram <- function(formula, data, subset, weights, offset, cluster, na.action = na
       nsX <- nsX[!grepl("[+]", nsX)]
       if (any(xin <- nsX %in% nS))
         stop("scaling variables not allowed as stratifying variables")
+      warning("Models with both strata and scale terms are highly experimental")
+      ### note: we would need extra constraints for all baseline
+      ### transformations in the discrete case
+      ### we also need stratum-specific intercepts.
     }
+
+    if (!remove_intercept && transformation == "discrete")
+        fixed[names(coef(model))[1L]] <- 0
 
     args <- list(...)
     args$model <- model
