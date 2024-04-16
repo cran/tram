@@ -126,7 +126,8 @@
 .models <- function(...) {
 
     m <- lapply(list(...), function(x) as.mlt(x))
-    nm <- abbreviate(sapply(m, function(x) x$model$response), 4)
+    # nm <- abbreviate(sapply(m, function(x) x$model$response), 4)
+    nm <- sapply(m, function(x) x$model$response)
     J <- length(m)
     Jp <- J * (J - 1) / 2
     normal <- sapply(m, function(x) x$todistr$name == "normal")
@@ -185,9 +186,18 @@
     type <- lapply(1:J, function(j)
         mlt:::.type_of_response(m[[j]]$response))
 
+    fixed <- vector(mode = "list", length = J)
+    for (j in 1:J) {
+        if (!is.null(m[[j]]$fixed)) {
+            fj <- m[[j]]$fixed
+            names(fj) <- paste(nm[j], names(fj), sep = ".")
+            fixed[[j]] <- fj
+        }
+    }
+
     return(list(models = m, mf = mf, cont = cmod, type = type, normal = normal, 
                 nobs = nobs, weights = w, nparm = P, parm = parm, 
-                ui = ui, ci = ci, mm = mm, names = nm))
+                ui = ui, ci = ci, mm = mm, names = nm, fixed = fixed))
 }
 
 .mget <- function(models, j = 1, parm, newdata = NULL, weights = NULL,
@@ -208,6 +218,9 @@
         return(models$models[[j]]$parsc)
 
     prm <- models$parm(parm)[[j]]
+    ### remove marginally fix parameters
+    if (!is.null(models$fixed[[j]]))
+        prm <- prm[!names(prm) %in% names(models$fixed[[j]])]
     tmp <- as.mlt(models$models[[j]])
     if (!is.null(newdata)) {
         tmp <- mlt(tmp$model, data = newdata, # weights = weights,
@@ -330,10 +343,55 @@ mmltoptim <- function(auglag = list(maxtry = 5), ...)
 mmlt <- function(..., formula = ~ 1, data, conditional = FALSE, 
                  theta = NULL, fixed = NULL, scale = FALSE,
                  optim = mmltoptim(), args = list(seed = 1, M = 1000), 
-                 dofit = TRUE, domargins = TRUE)
+                 dofit = TRUE, domargins = TRUE, sequentialfit = FALSE)
 {
   
     call <- match.call()
+
+    if (isTRUE(all.equal(formula, ~ 1))) {
+        lX <- matrix(1)
+        colnames(lX) <- "(Intercept)"
+        bx <- NULL
+    } else {
+        bx <- formula
+        if (inherits(formula, "formula")) {
+            bx <- as.basis(formula, data)
+        } 
+        lX <- model.matrix(bx, data = data)
+        if (conditional)
+            warning("Conditional models with covariate-dependent correlations are order-dependent")
+    }
+
+    if (sequentialfit) {
+        m <- list(...)
+        if (!dofit)
+            stop("Cannot perform sequential fit")
+        if (!is.null(theta))
+            stop("Cannot perform sequential fit with starting values")
+        if (!is.null(fixed))
+            stop("Cannot perform sequential fit with fixed values")
+        mj <- as.mlt(m[[1]])
+        for (j in 2:length(m)) {
+            mc <- m[1:j]
+            mc$formula <- formula
+            mc$data <- data
+            mc$conditional <- conditional
+            mc$scale <- scale
+            mc$optim <- optim
+            mc$args <- args
+            if (!is.null(mc$args$w)) mc$args$w <- mc$args$w[1:(j - 1L),,drop = FALSE]
+            mc$domargins <- domargins
+            cf <- .start(do.call(".models", m[1:j]), colnames(lX))
+            cfj <- coef(mj, fixed = TRUE)
+            if (j == 2)
+                names(cfj) <- names(cf)[1:length(cfj)]
+            ### fix coefs and estimate jth row of
+            ### lambda and (if domargins) jth marginal parameters only
+            mc$fixed <- cfj
+            mj <- do.call("mmlt", mc)
+        }
+        return(mj)
+    }
 
     m <- .models(...)
 
@@ -350,7 +408,7 @@ mmlt <- function(..., formula = ~ 1, data, conditional = FALSE,
         cl$domargins <- FALSE
         sm <- eval(cl, parent.frame())
         if (!is.null(sm)) {
-            theta <- coef(sm, type = "all")
+            theta <- coef(sm, type = "all", fixed = TRUE)
             if (conditional) {
                 ### theta are conditional parameters, scale with sigma
                 class(sm)[1] <- "cmmlt" ### do NOT standardize Lambda
@@ -371,25 +429,19 @@ mmlt <- function(..., formula = ~ 1, data, conditional = FALSE,
     if (dJ && is.null(args$w))
         args$w <- .MCw(J = dJ, M = args$M, seed = args$seed)
 
-    if (isTRUE(all.equal(formula, ~ 1))) {
-        lX <- matrix(1)
-        colnames(lX) <- "(Intercept)"
-        bx <- NULL
-    } else {
-        bx <- formula
-        if (inherits(formula, "formula")) {
-            bx <- as.basis(formula, data)
-        } 
-        lX <- model.matrix(bx, data = data)
-        if (conditional)
-            warning("Conditional models with covariate-dependent correlations are order-dependent")
-    }
     .Xparm <- function(parm) {
         parm <- parm[-(1:sum(m$nparm))]
         return(matrix(parm, nrow = ncol(lX)))
     }
 
     start <- .start(m, colnames(lX), names(fixed))
+    ### marginal fixed parameters
+    if (!is.null(m$fixed)) {
+        mfixed <- do.call("c", m$fixed)
+        fixed <- c(fixed, mfixed)
+        start <- .start(m, colnames(lX), names(fixed))
+    }
+    
     parnames <- eparnames <- names(start)
     lparnames <- names(start)[-(1:sum(m$nparm))]
     if (!is.null(fixed)) eparnames <- eparnames[!eparnames %in% names(fixed)]
@@ -554,7 +606,7 @@ mmlt <- function(..., formula = ~ 1, data, conditional = FALSE,
         if (!is.null(fixed)) {
             p <- par
             names(p) <- eparnames
-            p[names(fixed)] <- fixed
+            p <- c(p, fixed)
             par <- p[parnames]
         }
         return(-sum(weights * ll(par * scl, ...)))
@@ -565,7 +617,7 @@ mmlt <- function(..., formula = ~ 1, data, conditional = FALSE,
         if (!is.null(fixed)) {
             p <- par
             names(p) <- eparnames
-            p[names(fixed)] <- fixed
+            p <- c(p, fixed)
             par <- p[parnames]
         }
         ret <- -sc(par * scl, ...) * scl
@@ -580,6 +632,7 @@ mmlt <- function(..., formula = ~ 1, data, conditional = FALSE,
         stopifnot(!conditional)
 
         start <- start[1:sum(m$nparm)]
+        start <- start[names(start) %in% eparnames]
 
         cll <- function(cpar) f(c(start / scl[names(start)], cpar), scl = scl)
         csc <- function(cpar) {
@@ -614,9 +667,12 @@ mmlt <- function(..., formula = ~ 1, data, conditional = FALSE,
         ui <- m$ui
         ui <- cbind(ui, matrix(0, nrow = nrow(ui), 
                                ncol = length(parnames) - ncol(ui)))
-        if (!is.null(fixed)) 
-            ui <- ui[, !parnames %in% names(fixed), drop = FALSE]
         ci <- m$ci
+        if (!is.null(fixed)) {
+            d <- ui[, parnames %in% names(fixed), drop = FALSE] %*% fixed
+            ui <- ui[, !parnames %in% names(fixed), drop = FALSE]
+            ci <- m$ci - d
+        } 
 
         if (is.null(theta) && !dofit) 
             return(list(ll = function(...) f(..., scl = 1), 
@@ -650,9 +706,10 @@ mmlt <- function(..., formula = ~ 1, data, conditional = FALSE,
     ret$models <- m
     ret$formula <- formula
     ret$bx <- bx
-    ret$parm <- function(par) {
+    ret$parm <- function(par, flat = FALSE) {
         if (!is.null(fixed)) 
             par <- c(par, fixed)[parnames]
+        if (flat) return(par)
         return(c(m$parm(par), list(.Xparm(par))))
     }
     if (!missing(data))
@@ -666,13 +723,16 @@ mmlt <- function(..., formula = ~ 1, data, conditional = FALSE,
 
 
 .coef.mmlt <- function(object, newdata,
-                      type = c("all", "Lambda", "Lambdainv", "Precision", 
-                               "PartialCorr", "Sigma", "Corr", "Spearman", "Kendall"), 
-                      ...)
+                       type = c("all", "Lambdapar", "Lambda", "Lambdainv", "Precision", 
+                                "PartialCorr", "Sigma", "Corr", "Spearman", "Kendall"), 
+                       fixed = FALSE, ...)
 {
   
     type <- match.arg(type)
-    if (type == "all") return(object$par)
+    if (type == "all") {
+        if (!fixed) return(object$par)
+        return(object$parm(object$par, flat = TRUE))
+    }
 
     if (type == "Spearman")
         return(6 * asin(coef(object, newdata = newdata, type = "Cor") / 2) / pi)
@@ -692,9 +752,10 @@ mmlt <- function(..., formula = ~ 1, data, conditional = FALSE,
         ret <- ltMatrices(t(X %*% prm), byrow = TRUE, diag = FALSE, names = object$names)
     }
 
-    if (inherits(object, "mmmlt")) ret <- invcholD(ret)
+    if (inherits(object, "mmmlt")) ret <- invcholD(ret0 <- ret)
 
-    ret <- switch(type, "Lambda" = ret,
+    ret <- switch(type, "Lambdapar" = ret0, 
+                        "Lambda" = ret,
                         "Lambdainv" = solve(ret),
                         "Precision" = invchol2pre(ret),
                         "PartialCorr" = invchol2pc(ret),
@@ -704,9 +765,9 @@ mmlt <- function(..., formula = ~ 1, data, conditional = FALSE,
 }
 
 coef.cmmlt <- function(object, newdata,
-                       type = c("all", "conditional", "Lambda", "Lambdainv", 
+                       type = c("all", "conditional", "Lambdapar", "Lambda", "Lambdainv", 
                                 "Precision", "PartialCorr", "Sigma", "Corr", 
-                                "Spearman", "Kendall"), 
+                                "Spearman", "Kendall"), fixed = FALSE,
                        ...)
 {
 
@@ -715,13 +776,14 @@ coef.cmmlt <- function(object, newdata,
         prm <- object$parm(object$par)
         return(prm[-length(prm)])
     }
-    return(.coef.mmlt(object = object, newdata = newdata, type = type, ...))
+    return(.coef.mmlt(object = object, newdata = newdata, type = type, 
+                      fixed = fixed, ...))
 }
 
 coef.mmmlt <- function(object, newdata,
-                       type = c("all", "marginal", "Lambda", "Lambdainv", 
+                       type = c("all", "marginal", "Lambdapar", "Lambda", "Lambdainv", 
                                 "Precision", "PartialCorr", "Sigma", "Corr", 
-                                "Spearman", "Kendall"), 
+                                "Spearman", "Kendall"), fixed = FALSE,
                        ...)
 {
 
@@ -730,7 +792,8 @@ coef.mmmlt <- function(object, newdata,
         prm <- object$parm(object$par)
         return(prm[-length(prm)])
     }
-    return(.coef.mmlt(object = object, newdata = newdata, type = type, ...))
+    return(.coef.mmlt(object = object, newdata = newdata, type = type, 
+                      fixed = fixed, ...))
 }
 
 
