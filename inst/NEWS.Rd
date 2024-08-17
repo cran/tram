@@ -2,6 +2,14 @@
 \name{NEWS}
 \title{NEWS file for the tram package}
 
+\section{Changes in Version 1.0-5 (2024-08-17)}{
+  \itemize{
+    \item{Add example for \code{Compris}.}
+    \item{Correct \code{simulate.mmlt}.}
+    \item{Change to \code{R\_Calloc} and friends.}
+  }
+}
+
 \section{Changes in Version 1.0-4 (2024-05-13)}{
   \itemize{
     \item{Allow larger then needed \code{args$w} argument in \code{mmlt}.}

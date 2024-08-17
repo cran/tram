@@ -165,9 +165,10 @@
     stopifnot(length(nobs) == 1L)
     nobs <- nobs[[1L]]
 
-    P <- sapply(m, function(x) length(coef(x)))
+    P <- sapply(m, function(x) length(coef(x, fixed = TRUE)))
     fpar <- factor(rep(1:J, P))
 
+    ### par always includes marginally fixed parameters
     parm <- function(par) {
         mpar <- par[1:sum(P)]
         split(mpar, fpar)
@@ -331,6 +332,7 @@
     J <- length(m$models)
     Jp <- J * (J - 1) / 2
     Jnames <- m$names
+    ### fixed = FALSE?
     margin_par <- do.call("c", lapply(m$models, function(mod) coef(as.mlt(mod))))
     names(margin_par) <- paste(rep(Jnames, time = m$nparm), names(margin_par), sep = ".")
 
@@ -906,8 +908,12 @@ predict.mmlt <- function (object, newdata, margins = 1:J,
     if (length(margins) == 1L) {
         ### ... may carry q = something
         tmp <- object$models$models[[margins]]
-        cf <- coef(tmp)
-        cf[] <- object$models$parm(coef(object))[[margins]]
+        cf <- coef(tmp, fixed = TRUE)
+        ncf <- names(cf)
+        names(cf) <- paste(variable.names(tmp)[1L], names(cf), sep = ".")
+        cfm <- object$models$parm(coef(object, fixed = TRUE))[[margins]]
+        cf[names(cfm)] <- cfm
+        names(cf) <- ncf
         coef(tmp) <- cf
         ### marginal models
         if (!inherits(object, "cmmlt")) {
@@ -1039,19 +1045,35 @@ simulate.mmlt <- function(object, nsim = 1L, seed = NULL, newdata, K = 50, ...) 
 
     if (inherits(object, "cmmlt")) {
         for (j in 1:J) {
-            q <- mkgrid(object$models$models[[j]], n = K)[[1L]]
-            pr <- predict(object$models$models[[j]], newdata = newdata, type = "trafo", q = q)
+            tmp <- object$models$models[[j]]
+            q <- mkgrid(tmp, n = K)[[1L]]
+            cf <- coef(tmp, fixed = TRUE)
+            ncf <- names(cf)
+            names(cf) <- paste(variable.names(tmp)[1L], names(cf), sep = ".")
+            cfm <- object$models$parm(coef(object, fixed = TRUE))[[j]]
+            cf[names(cfm)] <- cfm
+            names(cf) <- ncf
+            coef(tmp) <- cf
+            pr <- predict(tmp, newdata = newdata, type = "trafo", q = q)
             if (!is.matrix(pr)) pr <- matrix(pr, nrow = length(pr), ncol = NROW(newdata))
-            ret[,j] <- as.double(mlt:::.invf(object$models$models[[j]], f = t(pr), 
+            ret[,j] <- as.double(mlt:::.invf(tmp, f = t(pr), 
                                              q = q, z = t(Ztilde[j,,drop = FALSE])))
         }
     } else {
         Ztilde <- pnorm(Ztilde, log.p = TRUE)
         for (j in 1:J) {
-            q <- mkgrid(object$models$models[[j]], n = K)[[1L]]
-            pr <- predict(object$models$models[[j]], newdata = newdata, type = "logdistribution", q = q)
+            tmp <- object$models$models[[j]]
+            q <- mkgrid(tmp, n = K)[[1L]]
+            cf <- coef(tmp, fixed = TRUE)
+            ncf <- names(cf)
+            names(cf) <- paste(variable.names(tmp)[1L], names(cf), sep = ".")
+            cfm <- object$models$parm(coef(object, fixed = TRUE))[[j]]
+            cf[names(cfm)] <- cfm
+            names(cf) <- ncf
+            coef(tmp) <- cf
+            pr <- predict(tmp, newdata = newdata, type = "logdistribution", q = q)
             if (!is.matrix(pr)) pr <- matrix(pr, nrow = length(pr), ncol = NROW(newdata))
-            ret[,j] <- as.double(mlt:::.invf(object$models$models[[j]], f = t(pr), 
+            ret[,j] <- as.double(mlt:::.invf(tmp, f = t(pr), 
                                              q = q, z = t(Ztilde[j,,drop = FALSE])))
         }
     }
@@ -1094,8 +1116,12 @@ confregion.mmlt <- function(object, level = .95, newdata, K = 250, ...) {
     nd <- if (missing(newdata)) data.frame(1) else newdata
 
     ret <- lapply(1:J, function(j) {
-        prb <- object$models$models[[j]]$todistr$p(a[,j])
-        predict(object$models$models[[j]], newdata = nd, type = "quantile", prob = prb)
+        tmp <- object$models$models[[j]]
+        prb <- tmp$todistr$p(a[,j])
+        cf <- coef(tmp)
+        cf[] <- object$models$parm(coef(object))[[j]]
+        coef(tmp) <- cf
+        predict(tmp, newdata = nd, type = "quantile", prob = prb)
     })
     
     ret <- do.call("cbind", ret)
