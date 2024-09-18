@@ -1,4 +1,8 @@
 
+library("tram")
+### version 1.0-6 only
+mmlt <- Mmlt
+
 ### Reproducibility material for
 ###
 ### Construction and evaluation of optimal diagnostic 
