@@ -13,9 +13,10 @@ Compris(formula, data, subset, weights, na.action, offset,
         competing = switch(primary, Coxph = "weibull", 
                                     Colr = "loglogistic", 
                                     BoxCox = "lognormal"), 
-        NPlogLik = FALSE,
-        optim = Mmltoptim(), args = list(seed = 1, M = 1000), 
-        scale = FALSE, tol = 0.001, ...)
+        NPlogLik = FALSE, theta = NULL,
+        optim = mltoptim(auglag = list(maxtry = 5)),
+        args = list(seed = 1, type = c("MC", "ghalton"), M = 1000),
+        scale = FALSE, ...)
 }
 \arguments{
   \item{formula}{an object of class \code{"formula"}: a symbolic description 
@@ -54,6 +55,7 @@ remaining competing events.
 }
   \item{NPlogLik}{logical, optimise nonparametric likelihood defined in
                   terms of multivariate probabilities.}
+  \item{theta}{optional starting values.}
   \item{optim}{see \code{Mmlt}.
 }
  \item{args}{a list of arguments for \code{\link[mvtnorm]{lpmvnorm}}.
@@ -62,9 +64,8 @@ remaining competing events.
                be scaled. Scaling is internally used for model estimation,
                rescaled coefficients are reported in model output.
 }
-  \item{tol}{a tolerance for faking interval censoring.
-}
-  \item{\dots}{addition arguments.
+  \item{\dots}{addition arguments passed to primary or competing model
+function.
 }
 }
 \details{
@@ -122,16 +123,48 @@ distributions for the primary event of interest and all competing events.
     ## Fit a Gaussian Copula-based Cox Proportional Hazards Model with
     ##   a marginal "Coxph" model for the primary event of interest and 
     ##   a Weibull "Survreg" model for dependent censoring
-    ## (don't test as it takes too long for CRAN)
-    \donttest{m <- Compris(y ~ ch + age + hgb + clinstg, data = follic, log_first = TRUE)
-  
-    summary(m)
-    
+    ## Use very informative starting values to keep CRAN happy
+    cf <- c(
+            "Event_relapse.Event_relapse.Bs1(Event_relapse)" = -1.89058, 
+            "Event_relapse.Event_relapse.Bs2(Event_relapse)" = -1.6566, 
+            "Event_relapse.Event_relapse.Bs3(Event_relapse)" = -0.50329, 
+            "Event_relapse.Event_relapse.Bs4(Event_relapse)" = -0.50329, 
+            "Event_relapse.Event_relapse.Bs5(Event_relapse)" = -0.07402, 
+            "Event_relapse.Event_relapse.Bs6(Event_relapse)" = 0.53156, 
+            "Event_relapse.Event_relapse.Bs7(Event_relapse)" = 0.67391, 
+            "Event_relapse.Event_relapse.chCMTRT" = -0.2861, 
+            "Event_relapse.Event_relapse.age" = 0.43178, 
+            "Event_relapse.Event_relapse.hgb" = 0.02913, 
+            "Event_relapse.Event_relapse.clinstgI" = -0.55601, 
+            "Event_death.Event_death.(Intercept)" = -2.20056, 
+            "Event_death.Event_death.log(Event_death)" = 0.98102, 
+            "Event_death.Event_death.chCMTRT" = 0.25012, 
+            "Event_death.Event_death.age" = -0.64826, 
+            "Event_death.Event_death.hgb" = -0.02312, 
+            "Event_death.Event_death.clinstgI" = 0.57684, 
+            "Event_death.Event_relapse.(Intercept)" = -3.48595
+           )
+    ### gave up after multiple submissions to CRAN resulting
+    ### in 5.02 > 5 secs
+    \donttest{
+    m <- Compris(y ~ ch + age + hgb + clinstg, data = follic, log_first = TRUE,
+                 ### arguments below speed-up example, don't use!
+                 theta = cf, 		### informativ starting values
+                 optim = mltoptim(),    ### no hessian
+                 args  = list(type = "ghalton", 
+                              M = 80))	### only 80 MC integration points
+
+    ### log-likelihood
+    logLik(m)
+
+    ## Similar to Table 4 of Deresa & Van Keilegom (2023),
+    ## but using a Gaussian copula instead of a Gumbel copula.
+    ## marginal parameters
+    coef(m, type = "marginal")    
     ## Kendall's tau
     coef(m, type = "Kendall")
     }
-    ## Similar to Table 4 of Deresa & Van Keilegom (2023),
-    ## but using a Gaussian copula instead of a Gumbel copula.
+
   }
 }
 
