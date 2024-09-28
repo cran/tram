@@ -1,7 +1,7 @@
 Package: tram
 Title: Transformation Models
-Version: 1.1-0
-Date: 2024-09-24
+Version: 1.1-1
+Date: 2024-09-27
 Authors@R: c(person("Torsten", "Hothorn", role = c("aut", "cre"),
                     email = "Torsten.Hothorn@R-project.org", comment = c(ORCID = "0000-0001-8301-0471")),
              person("Luisa", "Barbanti", role = "aut",
@@ -34,7 +34,7 @@ URL: http://ctm.R-forge.R-project.org
 Encoding: UTF-8
 License: GPL-2
 NeedsCompilation: yes
-Packaged: 2024-09-26 17:23:53 UTC; hothorn
+Packaged: 2024-09-27 12:39:59 UTC; hothorn
 Author: Torsten Hothorn [aut, cre] (<https://orcid.org/0000-0001-8301-0471>),
   Luisa Barbanti [aut] (<https://orcid.org/0000-0001-5352-5802>),
   Sandra Siegfried [aut] (<https://orcid.org/0000-0002-7312-1001>),
@@ -44,4 +44,4 @@ Author: Torsten Hothorn [aut, cre] (<https://orcid.org/0000-0001-8301-0471>),
   Nadja Klein [ctb]
 Maintainer: Torsten Hothorn <Torsten.Hothorn@R-project.org>
 Repository: CRAN
-Date/Publication: 2024-09-26 18:00:02 UTC
+Date/Publication: 2024-09-28 02:30:02 UTC
