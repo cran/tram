@@ -1,4 +1,4 @@
-507ec20266dbd4389d00d0f204ea599b *DESCRIPTION
+03f79ded37a0ae3af1b1f1720b388570 *DESCRIPTION
 00de806758e1905ce58b07886cbe717f *NAMESPACE
 f8f7c62581c184888aa6447523d7bb93 *R/Compris.R
 efae208362a5dce03eb3bbfdd9e220e6 *R/internal.R
@@ -19,12 +19,12 @@ ff5a2ecd7d3384894dc4f34558f64089 *demo/mtram.R
 59a19eae6935cc4d4e144202672f4aea *demo/survtram.R
 495cc1981054f4c21aa9ff989a663390 *demo/undernutrition.R
 a46a61a5c035ee21215b417d3b967bf2 *inst/CITATION
-c5910293eeb90762a86c357948af17aa *inst/NEWS.Rd
+0193314842463cebc1ee150a81c1626b *inst/NEWS.Rd
 2446756db6a8551b582b82e39f9ac6f6 *inst/doc/mtram.Rnw
-94ab3a708b21e1489524d451c4ba178f *inst/doc/mtram.pdf
+564421235d149f53c5b0711f69fb5a6d *inst/doc/mtram.pdf
 4d903ccd1f85972ec41aeea0290640f9 *inst/doc/tram.R
 a4121777a06b550cf584f57eebe3db86 *inst/doc/tram.Rnw
-b708bdb3642ee32bbffadd66ecd95999 *inst/doc/tram.pdf
+719f52681715f7c295e41207aca990cc *inst/doc/tram.pdf
 a507b1d9bc5a1d0656927f5882057389 *inst/npnsimulations/README.txt
 74a8c56f16aa1c2e07b831815f45afbc *inst/npnsimulations/dgp.R
 94d86222473c376db42b7f7a83e6b140 *inst/npnsimulations/eff_NP_NP.R
@@ -73,8 +73,8 @@ c0e245d8e2dbcd60fe54d0b046c8ab05 *tests/Survreg-Ex.Rout.save
 fa1603371bb2df776f3594db8494adbf *tests/bugfixes.R
 e2f6a293f30897ae81b2c088f8f9bc29 *tests/intercepts-Ex.R
 426cdb59e4084432407af2247c10ff1d *tests/intercepts-Ex.Rout.save
-74230adc8f15c8bd991b5932fb2d0f1c *tests/mmlt-Ex.R
-fa26d920c6249e7d3b99edea608c5e1d *tests/mmlt-Ex.Rout.save
+1f07b8a1c2158e86c246d29b2309eed1 *tests/mmlt-Ex.R
+19f74336a5b75e7414d76eb19d55fa15 *tests/mmlt-Ex.Rout.save
 04c36cac370b23b101c3bb13e681159e *tests/mmlt-interface.R
 baa59fbc8a0ce80396b6d6cf2a590f25 *tests/stram-Ex.R
 bc58ca705dae1d4827241e1e7d5c185f *tests/stram-Ex.Rout.save
