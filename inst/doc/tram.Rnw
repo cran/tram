@@ -1,6 +1,6 @@
 
 %\VignetteEngine{knitr::knitr}
-%\VignetteIndexEntry{tram}
+%\VignetteIndexEntry{Transformation Models: The tram Package}
 %\VignetteDepends{tram, survival, MASS, mlbench, multcomp, ordinal, colorspace, quantreg, ATR}
 
 \documentclass[article,nojss,shortnames]{jss}
@@ -120,6 +120,11 @@ if (any(!pkgs)) {
     cat(paste("Package(s)", paste(names(pkgs)[!pkgs], collapse = ", "), 
         "not available, stop processing.",
         "\\end{document}\n"))
+    knitr::knit_exit()
+}
+if (!interactive() && .Platform$OS.type != "unix")
+{
+    cat("Vignette only compiled under Unix alikes.")
     knitr::knit_exit()
 }
 @
