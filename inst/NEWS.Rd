@@ -2,6 +2,16 @@
 \name{NEWS}
 \title{NEWS file for the tram package}
 
+\section{Changes in Version 1.2-2 (2025-02-25)}{
+  \itemize{
+    \item{Make \code{model.matrix} more flexible for \code{tram} objects.}
+    \item{New doubly robust score test added as \code{robust_score_test}.}
+    \item{Add \code{fit} argument to \code{Compris}.}
+    \item{Fix broken bib file.}
+    \item{Don't refit instable mixed models for toe nail data in vignette.}
+  }
+}
+
 \section{Changes in Version 1.2-0 (2024-11-18)}{
   \itemize{
     \item{Adding scores for discrete \code{mtram} models.}

@@ -58,7 +58,7 @@ lm_BH <- lm(cmedv ~ crim + zn + indus + chas + nox + rm + age + dis +
 BostonHousing2$rad <- as.numeric(BostonHousing2$rad)
 BostonHousing2$tax <- as.numeric(BostonHousing2$tax)
 
-## ----tram-BostonHousing-Lm1, cache = TRUE--------------------------------
+## ----tram-BostonHousing-Lm1, cache = FALSE-------------------------------
 Lm_BH_1 <- Lm(cmedv ~ crim + zn + indus + chas + nox + rm + age + dis + 
               rad + tax + ptratio + b + lstat, data = BostonHousing2)
 
@@ -74,14 +74,14 @@ coef(Lm_BH_1, as.lm = TRUE)
 summary(lm_BH)$sigma
 1 / coef(Lm_BH_1, with_baseline = TRUE)["cmedv"]
 
-## ----tram-BostonHousing-Lm2, cache = TRUE--------------------------------
+## ----tram-BostonHousing-Lm2, cache = FALSE-------------------------------
 BostonHousing2$y <- with(BostonHousing2, Surv(cmedv, cmedv < 50))
 Lm_BH_2 <- Lm(y ~ crim + zn + indus + chas + nox + 
               rm + age + dis + rad + tax + ptratio + b + lstat, 
               data = BostonHousing2)
 logLik(Lm_BH_2)
 
-## ----tram-BostonHousing-Lm3, cache = TRUE--------------------------------
+## ----tram-BostonHousing-Lm3, cache = FALSE-------------------------------
 Lm_BH_3 <- Lm(y | 0 + chas ~ crim + zn + indus + nox + 
               rm + age + dis + rad + tax + ptratio + b + lstat, 
               data = BostonHousing2)
@@ -93,13 +93,13 @@ logLik(Lm_BH_3)
 ## ----tram-BostonHousing-chas-glht----------------------------------------
 summary(glht(as.mlt(Lm_BH_3), linfct = c("y:chas0 - y:chas1 = 0")))
 
-## ----tram-BostonHousing-Lm4, cache = TRUE--------------------------------
+## ----tram-BostonHousing-Lm4, cache = FALSE-------------------------------
 Lm_BH_4 <- Lm(y | 0 + chas + crim + zn + indus + nox + 
               rm + age + dis + rad + tax + ptratio + b + lstat ~ 0, 
               data = BostonHousing2)
 logLik(Lm_BH_4)
 
-## ----tram-BostonHousing-BC-1, cache = TRUE-------------------------------
+## ----tram-BostonHousing-BC-1, cache = FALSE------------------------------
 BC_BH_1 <- BoxCox(y ~ chas + crim + zn + indus + nox + 
                   rm + age + dis + rad + tax + ptratio + b + lstat, 
                   data = BostonHousing2)
@@ -111,7 +111,7 @@ plot(BC_BH_1, which = "baseline only", newdata = nd, col = col,
      confidence = "interval", fill = fill, lwd = 2,
      xlab = "Median Value", ylab = expression(h[Y]))
 
-## ----tram-BostonHousing-BC-2, cache = TRUE-------------------------------
+## ----tram-BostonHousing-BC-2, cache = FALSE------------------------------
 BC_BH_2 <- BoxCox(y | 0 + chas ~ crim + zn + indus + nox + 
                   rm + age + dis + rad + tax + ptratio + b + lstat, 
                   data = BostonHousing2)
@@ -137,13 +137,13 @@ legend("bottomright", lty = 1, col = col,
 #        rm + age + dis + rad + tax + ptratio + b + lstat ~ 0,
 #        data = BostonHousing2)
 
-## ----tram-BostonHousing-Colr-1, cache = TRUE-----------------------------
+## ----tram-BostonHousing-Colr-1, cache = FALSE----------------------------
 Colr_BH_1 <- Colr(y | 0 + chas ~ crim + zn + indus + nox + 
                   rm + age + dis + rad + tax + ptratio + b + lstat, 
                   data = BostonHousing2)
 logLik(Colr_BH_1)
 
-## ----tram-BostonHousing-Colr-CI, cache = TRUE----------------------------
+## ----tram-BostonHousing-Colr-CI, cache = FALSE---------------------------
 round(cbind(exp(coef(Colr_BH_1)), exp(confint(Colr_BH_1))), 3)
 
 ## ----tram-BostonHousing-Colr-1-plot, echo = FALSE------------------------
@@ -166,7 +166,7 @@ pfun <- function(x, y, z, subscripts, at, ...) {
 plot(contourplot(d ~ lp + q | chas, data = nd2, panel = pfun, xlab = "Linear predictor", 
      ylab = "Median Value", col = col[1]))#, main = "Continuous Outcome Logistic Regression"))
 
-## ----tram-BostonHousing-rq-1, cache = TRUE-------------------------------
+## ----tram-BostonHousing-rq-1, cache = FALSE------------------------------
 tau <- 2:18 / 20
 fm <- cmedv ~ crim + zn + indus + chas + nox + rm + age + dis + 
               rad + tax + ptratio + b + lstat
@@ -191,7 +191,7 @@ for (i in idx) {
 #  abline(v = BostonHousing2[i, "cmedv"])
 }
 
-## ----tram-GBSG2-Weibull-1, cache = TRUE----------------------------------
+## ----tram-GBSG2-Weibull-1, cache = FALSE---------------------------------
 data("GBSG2", package = "TH.data")
 Survreg_GBSG2_1 <- Survreg(Surv(time, cens) ~ horTh, data = GBSG2)
 logLik(Survreg_GBSG2_1)
@@ -213,7 +213,7 @@ plot(Survreg_GBSG2_1, newdata = nd, which = "distribution",
 legend("bottomleft", lty = 1, title = "Hormonal Therapy", 
        legend = levels(nd$horTh), bty = "n", col = col)
 
-## ----tram-GBSG2-Weibull-2, cache = TRUE----------------------------------
+## ----tram-GBSG2-Weibull-2, cache = FALSE---------------------------------
 Survreg_GBSG2_2 <- Survreg(Surv(time, cens) | 0 + horTh ~ 1, data = GBSG2)
 logLik(Survreg_GBSG2_2)
 survreg_GBSG2_2 <- survreg(Surv(time, cens) ~ strata(horTh) + horTh - 1, 
@@ -223,12 +223,12 @@ coef(Survreg_GBSG2_2, with_baseline = TRUE)
 c(1 / survreg_GBSG2_2$scale, -coef(survreg_GBSG2_2) / 
                               survreg_GBSG2_2$scale)
 
-## ----tram-GBSG2-Cox-1, cache = TRUE--------------------------------------
+## ----tram-GBSG2-Cox-1, cache = FALSE-------------------------------------
 Coxph_GBSG2_1 <- Coxph(Surv(time, cens) ~ horTh, data = GBSG2)
 logLik(Coxph_GBSG2_1)
 coef(Coxph_GBSG2_1)
 
-## ----tram-GBSG2-Cox-2, cache = TRUE--------------------------------------
+## ----tram-GBSG2-Cox-2, cache = FALSE-------------------------------------
 Coxph_GBSG2_2 <- Coxph(Surv(time, cens) | 0 + horTh ~ 1 , data = GBSG2)
 logLik(Coxph_GBSG2_2)
 
@@ -248,33 +248,33 @@ polr_wine <- polr(rating ~ temp + contact, data = wine)
 logLik(polr_wine)
 coef(polr_wine)
 
-## ----tram-wine-clm-1, cache = TRUE---------------------------------------
+## ----tram-wine-clm-1, cache = FALSE--------------------------------------
 clm_wine_1 <- clm(rating ~ temp + contact, data = wine)
 logLik(clm_wine_1)
 coef(clm_wine_1)
 
-## ----tram-wine-Polr-1, cache = TRUE--------------------------------------
+## ----tram-wine-Polr-1, cache = FALSE-------------------------------------
 Polr_wine_1 <- Polr(rating ~ temp + contact, data = wine)
 logLik(Polr_wine_1)
 coef(Polr_wine_1, with_baseline = TRUE)
 
-## ----tram-wine-clm-2, cache = TRUE---------------------------------------
+## ----tram-wine-clm-2, cache = FALSE--------------------------------------
 clm_wine_2 <- clm(rating ~ temp, nominal = ~ contact, data = wine)
 logLik(clm_wine_2)
 coef(clm_wine_2)
 
-## ----tram-wine-Polr-2, cache = TRUE--------------------------------------
+## ----tram-wine-Polr-2, cache = FALSE-------------------------------------
 Polr_wine_2 <- Polr(rating | 1 + contact ~ temp, data = wine)
 logLik(Polr_wine_2)
 coef(Polr_wine_2, with_baseline = TRUE)
 
-## ----tram-wine-clm-3, cache = TRUE---------------------------------------
+## ----tram-wine-clm-3, cache = FALSE--------------------------------------
 clm_wine_3 <- clm(rating ~ temp, nominal = ~ contact, data = wine, 
                   link = "probit")
 logLik(clm_wine_3)
 coef(clm_wine_3)
 
-## ----tram-wine-Polr-3, cache = TRUE--------------------------------------
+## ----tram-wine-Polr-3, cache = FALSE-------------------------------------
 Polr_wine_3 <- Polr(rating | 1 + contact ~ temp, data = wine, 
                     method = "probit")
 logLik(Polr_wine_3)
@@ -301,11 +301,11 @@ Polr_wine_4 <- Polr(crating | contact ~ temp, data = wine,
 logLik(Polr_wine_4)
 coef(Polr_wine_4)
 
-## ----tram-BostonHousing-BC-4-0, cache = TRUE-----------------------------
+## ----tram-BostonHousing-BC-4-0, cache = FALSE----------------------------
 BC_BH_0 <- BoxCox(y ~ 1, data = BostonHousing2)
 logLik(BC_BH_0)
 
-## ----tram-BostonHousing-BC-4, cache = TRUE-------------------------------
+## ----tram-BostonHousing-BC-4, cache = FALSE------------------------------
 library("trtf")
 BC_BH_4 <- trafotree(BC_BH_0, 
     formula = y ~ chas + crim + zn + indus + nox + 

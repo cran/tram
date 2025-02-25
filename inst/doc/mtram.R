@@ -451,140 +451,6 @@ xyplot(prob ~ time | model, data = nd2, group = treatment, ylim = c(0, 1),
                        points = FALSE, lines = TRUE, space = "top"), 
        col = col, type = "l", ylab = "Probability (none or mild)")
 
-## ----mtram-toenail-subset------------------------------------------------
-(rlev <- levels(toenail$patientID)[xtabs(~ patientID, 
-                                        data = toenail) == 1])
-toenail_gr1 <- subset(toenail, !patientID %in% rlev)
-toenail_gr1$patientID <- toenail_gr1$patientID[, drop = TRUE]
-
-## ----mtram-toenail_glmer_RS, cache = FALSE-------------------------------
-toenail_glmer_RS <- 
-    glmer(outcome ~ treatment * time + (1 + time | patientID),
-          data = toenail_gr1, family = binomial(link = "probit"))
-summary(toenail_glmer_RS)
-toenail_glmer_RS@theta
-
-## ----mtram-toenail_glmmTMB_RS, cache = FALSE-----------------------------
-toenail_glmmTMB_RS_1 <- 
-    glmmTMB(outcome ~ treatment * time + (1 + time | patientID),
-         data = toenail_gr1, family = binomial(link = "probit"))
-summary(toenail_glmmTMB_RS_1)
-
-## ----mtram-toenail_mtram_RS, cache = FALSE-------------------------------
-m <- ctm(as.basis(~ outcome, data = toenail_gr1), 
-         shifting = ~ treatment * time, 
-         data = toenail, todistr = "Normal", negative = TRUE)
-toenail_probit <- mlt(m, data = toenail_gr1, 
-                      fixed = c("outcomemoderate or severe" = 0))
-toenail_mtram_RS <- 
-    mtram(toenail_probit, ~ (1 + time | patientID), 
-          data = toenail_gr1)
-logLik(toenail_mtram_RS)
-coef(toenail_mtram_RS)
-
-## ----toenail-comparisons, cache = FALSE, echo = FALSE, results = "hide"----
-t1 <- system.time(toenail_glmer_RI_1 <- 
-    glmer(outcome ~ treatment * time + (1 | patientID),
-          data = toenail, family = binomial(link = "probit"), 
-          nAGQ = 1))
-
-t2 <- system.time(toenail_glmer_RI_2 <- 
-    glmer(outcome ~ treatment * time + (1 | patientID),
-          data = toenail, family = binomial(link = "probit"), 
-          nAGQ = 20))
-
-t3 <- system.time(toenail_glmmTMB_RI_3 <- 
-    glmmTMB(outcome ~ treatment * time + (1 | patientID),
-         data = toenail, family = binomial(link = "probit")))
-
-m <- ctm(as.basis(~ outcome, data = toenail), 
-         shifting = ~ treatment * time, 
-         data = toenail, todistr = "Normal", negative = TRUE)
-toenail_probit <- mlt(m, data = toenail, 
-                      fixed = c("outcomemoderate or severe" = 0))
-t4 <- system.time(toenail_mtram_RI <- 
-    mtram(toenail_probit, ~ (1 | patientID), data = toenail))
-
-t5 <- system.time(toenail_glmer_RS <- 
-    glmer(outcome ~ treatment * time + (1 + time | patientID),
-          data = toenail_gr1, family = binomial(link = "probit")))
-
-t6 <- system.time(toenail_glmmTMB_RS_1 <- 
-    glmmTMB(outcome ~ treatment * time + (1 + time | patientID),
-         data = toenail_gr1, family = binomial(link = "probit")))
-
-m <- ctm(as.basis(~ outcome, data = toenail_gr1), 
-         shifting = ~ treatment * time, 
-         data = toenail, todistr = "Normal", negative = TRUE)
-toenail_probit <- mlt(m, data = toenail_gr1, 
-                      fixed = c("outcomemoderate or severe" = 0))
-t7 <- system.time(toenail_mtram_RS <- 
-    mtram(toenail_probit, ~ (1 + time | patientID), 
-           data = toenail_gr1))
-
-## ----output, echo = FALSE------------------------------------------------
-tn_RI_glmer_L <- c(fixef(toenail_glmer_RI_1), toenail_glmer_RI_1@theta, 0, 0)
-tn_RI_glmer_A <- c(fixef(toenail_glmer_RI_2), toenail_glmer_RI_2@theta, 0, 0)
-tn_RI_glmmTMB <- c(fixef(toenail_glmmTMB_RI_3)$cond, sqrt(VarCorr(toenail_glmmTMB_RI_3)$cond$patientID), 0, 0)
-tn_RI_mlt <- c(coef(toenail_mtram_RI), 0, 0)
-tn_RS_glmer <- c(fixef(toenail_glmer_RS), toenail_glmer_RS@theta)
-tn_RS_glmmTMB <- c(fixef(toenail_glmer_RS), chol(VarCorr(toenail_glmmTMB_RS_1)$cond$patientID)[c(1,3, 4)])
-tn_RS_mlt <- coef(toenail_mtram_RS)
-tn <- cbind(tn_RI_glmer_L, tn_RI_glmer_A , tn_RI_glmmTMB, tn_RI_mlt ,
-            tn_RS_glmer, tn_RS_glmmTMB, tn_RS_mlt)
-
-logLik(toenail_glmer_RI_1)
-logLik(toenail_glmer_RI_2)
-logLik(toenail_glmmTMB_RI_3)
-logLik(toenail_mtram_RI)
-
-logLik(toenail_glmer_RS)
-logLik(toenail_glmmTMB_RS_1)
-logLik(toenail_mtram_RS)
-
-ll <- c(
-### logLik of transformation model for glmer (Laplace) parameters
-logLik(toenail_mtram_RI, tn_RI_glmer_L[1:5] * c(-1, 1, 1, 1, 1)),
-### logLik of transformation model for glmer (AGQ) parameters
-logLik(toenail_mtram_RI, tn_RI_glmer_A[1:5] * c(-1, 1, 1, 1, 1)),
-### logLik of transformation model for glmmTMB (Laplace) parameters
-logLik(toenail_mtram_RI, tn_RI_glmmTMB[1:5] * c(-1, 1, 1, 1, 1)),
-### logLik of transformation model
-logLik(toenail_mtram_RI),
-### logLik of transformation model for glmer (Laplace) parameters
-logLik(toenail_mtram_RS, tn_RS_glmer * c(-1, rep(1, 6))),
-### logLik of transformation model for glmmTMB (Laplace) parameters
-logLik(toenail_mtram_RS, tn_RS_glmmTMB * c(-1, rep(1, 6))),
-### logLik of transformation model
-logLik(toenail_mtram_RS))
-
-tm <- c(t1["user.self"],
-        t2["user.self"],
-        t3["user.self"],
-        t4["user.self"],
-        t5["user.self"],
-        t6["user.self"],
-        t7["user.self"])
-tm <- formatC(tm, format = "f", digits = 2, width = 5)
-
-tn <- formatC(tn, format = "f", digits = 2, width = 5)
-ll <- formatC(ll, format = "f", digits = 2, width = 6)
-tn <- cbind(c("$\\alpha$", "$\\eshiftparm_1$", "$\\eshiftparm_2$", "$\\eshiftparm_3$", "$\\gamma_1$", "$\\gamma_2$", "$\\gamma_3$"), tn)
-ret <- c("
-\\begin{tabular}{lrrrr|rrr} \\\\ \\hline
-& \\multicolumn{4}{c|}{RI} & \\multicolumn{3}{c}{RI + RS} \\\\
-& \\texttt{glmer} & \\texttt{glmer} & \\texttt{glmmTMB} &  & \\texttt{glmer} & \\texttt{glmmTMB} & \\\\
-& L               & AGQ             & L & (7) & L & L & (7) \\\\ \\hline")
-ret <- c(ret, apply(tn, 1, function(x) c(paste(x, collapse = " & "), "\\\\")))
-ret <- c(ret, "\\hline")
-ret <- c(ret, 
-         paste("LogLik &", paste(ll, collapse = "&"), "\\\\ "), 
-         paste("Time (sec)   &", paste(tm, collapse = "&"), "\\\\ \\hline"), 
-         "\\end{tabular}")
-
-## ----table, echo = FALSE, results = "asis"-------------------------------
-cat(ret, sep = "\n")
-
 ## ----mtram-neck_plot, echo = FALSE, fig.height = 4, fig.width = 7--------
 data("neck_pain", package = "ordinalCont")
 pain_df <- neck_pain
@@ -746,7 +612,7 @@ tmp[exact,1] <- pmax(tmp[exact,1] - 2, 0)
 tmp[exact,3] <- 3
 CAOsurv$iDFS2 <- tmp
 
-## ----mtram-CAO_SR, cache = TRUE------------------------------------------
+## ----mtram-CAO_SR, cache = FALSE-----------------------------------------
 CAO_SR <- Survreg(iDFS2 ~ randarm, data = CAOsurv)
 CAO_SR_mtram <- mtram(CAO_SR, ~ (1 | Block), data = CAOsurv)
 logLik(CAO_SR_mtram)
@@ -762,7 +628,7 @@ s <- rbeta[, ncol(rbeta)]
 rbeta <- rbeta[, -ncol(rbeta)] / sqrt(s^2 + 1)
 quantile(exp(-rbeta[, ncol(rbeta)]), prob = c(.025, .5, .975))
 
-## ----mtram-CAO_SR_2, cache = TRUE----------------------------------------
+## ----mtram-CAO_SR_2, cache = FALSE---------------------------------------
 CAO_SR_2 <- Survreg(iDFS2 | 0 + strat_n:strat_t ~ randarm, data = CAOsurv)
 CAO_SR_2_mtram <- mtram(CAO_SR_2, ~ (1 | Block), data = CAOsurv)
 logLik(CAO_SR_2_mtram)
@@ -777,7 +643,7 @@ s <- rbeta[, ncol(rbeta)]
 rbeta <- rbeta[, -ncol(rbeta)] / sqrt(s^2 + 1)
 quantile(exp(-rbeta[, ncol(rbeta)]), prob = c(.025, .5, .975))
 
-## ----mtram-CAO_Cox_2, cache = TRUE---------------------------------------
+## ----mtram-CAO_Cox_2, cache = FALSE--------------------------------------
 CAO_Cox_2 <- Coxph(iDFS2 | 0 + strat_n:strat_t ~ randarm, data = CAOsurv, 
                    support = c(1, 1700), log_first = TRUE, order = 4)
 logLik(CAO_Cox_2)
@@ -804,11 +670,11 @@ tmp$coef <- coef(CAO_Cox_2_mtram)[-22] / sqrt(coef(CAO_Cox_2_mtram)[22]^2 + 1)
 ci_man <- quantile(-rbeta[, ncol(rbeta)], prob = c(.025, .5, .975))
 (CAO_Cox_PIm <- PI(ci_man, link = "minimum extreme value"))
 
-## ----tramME-CAO_SR, cache = TRUE-----------------------------------------
+## ----tramME-CAO_SR, cache = FALSE----------------------------------------
 CAO_Cox_2_tramME <- CoxphME(iDFS2 | 0 + strat_n:strat_t ~ randarm + (1 | Block), 
                             data = CAOsurv, log_first = TRUE)
 
-## ----tramME-CAO_SR-hr, cache = TRUE--------------------------------------
+## ----tramME-CAO_SR-hr, cache = FALSE-------------------------------------
 exp(coef(CAO_Cox_2_tramME))
 exp(confint(CAO_Cox_2_tramME, parm = "randarm5-FU + Oxaliplatin", 
             estimate = TRUE))
