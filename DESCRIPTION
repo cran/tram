@@ -1,7 +1,7 @@
 Package: tram
 Title: Transformation Models
-Version: 1.2-1
-Date: 2025-02-25
+Version: 1.2-2
+Date: 2025-05-09
 Authors@R: c(person("Torsten", "Hothorn", role = c("aut", "cre"),
                     email = "Torsten.Hothorn@R-project.org", comment = c(ORCID = "0000-0001-8301-0471")),
              person("Luisa", "Barbanti", role = "aut",
@@ -43,15 +43,16 @@ URL: http://ctm.R-forge.R-project.org
 Encoding: UTF-8
 License: GPL-2
 NeedsCompilation: no
-Packaged: 2025-02-25 12:23:36 UTC; hothorn
-Author: Torsten Hothorn [aut, cre] (<https://orcid.org/0000-0001-8301-0471>),
-  Luisa Barbanti [aut] (<https://orcid.org/0000-0001-5352-5802>),
-  Sandra Siegfried [aut] (<https://orcid.org/0000-0002-7312-1001>),
-  Lucas Kook [aut] (<https://orcid.org/0000-0002-7546-7356>),
+Packaged: 2025-05-09 12:27:37 UTC; hothorn
+Author: Torsten Hothorn [aut, cre] (ORCID:
+    <https://orcid.org/0000-0001-8301-0471>),
+  Luisa Barbanti [aut] (ORCID: <https://orcid.org/0000-0001-5352-5802>),
+  Sandra Siegfried [aut] (ORCID: <https://orcid.org/0000-0002-7312-1001>),
+  Lucas Kook [aut] (ORCID: <https://orcid.org/0000-0002-7546-7356>),
   Brian Ripley [ctb],
   Bill Venables [ctb],
   Douglas M. Bates [ctb],
   Nadja Klein [ctb]
 Maintainer: Torsten Hothorn <Torsten.Hothorn@R-project.org>
 Repository: CRAN
-Date/Publication: 2025-02-25 13:30:02 UTC
+Date/Publication: 2025-05-09 15:40:02 UTC
