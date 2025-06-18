@@ -1,16 +1,18 @@
 Package: tram
 Title: Transformation Models
-Version: 1.2-2
-Date: 2025-05-09
+Version: 1.2-3
+Date: 2025-06-17
 Authors@R: c(person("Torsten", "Hothorn", role = c("aut", "cre"),
                     email = "Torsten.Hothorn@R-project.org", comment = c(ORCID = "0000-0001-8301-0471")),
-             person("Luisa", "Barbanti", role = "aut",
+             person("Luisa", "Barbanti", role = "ctb",
 	comment = c(ORCID = "0000-0001-5352-5802")),
              person("Sandra", "Siegfried", role = "aut",
 	comment = c(ORCID = "0000-0002-7312-1001")),
              person("Lucas", "Kook", role = c("aut"),
                     email = "lucasheinrich.kook@gmail.com",
                     comment = c(ORCID = "0000-0002-7546-7356")),
+             person("Susanne", "Dandl", role = c("ctb"),
+                    comment = c(ORCID = "0000-0003-4324-4163")),
              person("Brian", "Ripley", role = "ctb"),
              person("Bill", "Venables", role = "ctb"),
              person(c("Douglas", "M."), "Bates", role = "ctb"),
@@ -27,7 +29,7 @@ Description: Formula-based user-interfaces to specific transformation models
   (Klein et al, 2022, <DOI:10.1111/sjos.12501>) and shift-scale transformation models (Siegfried et al, 2023,
   <DOI:10.1080/00031305.2023.2203177>) can be fitted as well. The package contains an implementation of 
   a doubly robust score test, described in  Kook et al. (2024, <DOI:10.1080/01621459.2024.2395588>).
-Depends: R (>= 3.5.0), mlt (>= 1.6-0), mvtnorm (>= 1.3-2)
+Depends: R (>= 3.5.0), mlt (>= 1.6-6), mvtnorm (>= 1.3-2)
 Imports: Formula, multcomp, variables (>= 1.0-4), basefun (>= 1.1-2),
         sandwich, stats, survival, graphics, Matrix, methods
 Suggests: MASS, TH.data, trtf (>= 0.3-3), mlbench, knitr, quantreg,
@@ -37,22 +39,23 @@ Suggests: MASS, TH.data, trtf (>= 0.3-3), mlbench, knitr, quantreg,
         tramME, glmmTMB, geepack, ranger, eha, flexsurv, frailtyEM,
         frailtypack, gamlss.cens, icenReg, mpr, rms, rstpm2, timereg,
         Stat2Data, cotram, latex2exp, tramvs, AER, KONPsurv,
-        gamlss.data
+        gamlss.data, Stat2Data
 VignetteBuilder: knitr
 URL: http://ctm.R-forge.R-project.org
 Encoding: UTF-8
 License: GPL-2
 NeedsCompilation: no
-Packaged: 2025-05-09 12:27:37 UTC; hothorn
+Packaged: 2025-06-18 08:54:27 UTC; hothorn
 Author: Torsten Hothorn [aut, cre] (ORCID:
     <https://orcid.org/0000-0001-8301-0471>),
-  Luisa Barbanti [aut] (ORCID: <https://orcid.org/0000-0001-5352-5802>),
+  Luisa Barbanti [ctb] (ORCID: <https://orcid.org/0000-0001-5352-5802>),
   Sandra Siegfried [aut] (ORCID: <https://orcid.org/0000-0002-7312-1001>),
   Lucas Kook [aut] (ORCID: <https://orcid.org/0000-0002-7546-7356>),
+  Susanne Dandl [ctb] (ORCID: <https://orcid.org/0000-0003-4324-4163>),
   Brian Ripley [ctb],
   Bill Venables [ctb],
   Douglas M. Bates [ctb],
   Nadja Klein [ctb]
 Maintainer: Torsten Hothorn <Torsten.Hothorn@R-project.org>
 Repository: CRAN
-Date/Publication: 2025-05-09 15:40:02 UTC
+Date/Publication: 2025-06-18 09:40:02 UTC

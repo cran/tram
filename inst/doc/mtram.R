@@ -5,11 +5,11 @@ pkgs <- c("colorspace", "survival", "lme4", "tram", "gridExtra",
           "lattice", "latticeExtra", "mvtnorm", "ordinalCont", "tramME")
 pkgs <- sapply(pkgs, require, character.only = TRUE)
 
-## ----mtram-citation, echo = FALSE---------------------------------------------
+## ----mtram-citation, echo = FALSE----------------------------------------
 year <- substr(packageDescription("tram")$Date, 1, 4)
 version <- packageDescription("tram")$Version
 
-## ----fail, results = "asis", echo = FALSE-------------------------------------
+## ----fail, results = "asis", echo = FALSE--------------------------------
 if (any(!pkgs))
 {
     cat(paste("Package(s)", paste(names(pkgs)[!pkgs], collapse = ", "), 
