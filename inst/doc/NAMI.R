@@ -16,7 +16,8 @@ if (any(!pkgs))
 }
 if (!interactive() && .Platform$OS.type != "unix")
 {
-    cat("Vignette only compiled under Unix alikes.")
+    cat(paste("Vignette only compiled under Unix alikes.",
+        "\\end{document}\n"))
     knitr::knit_exit()
 }
 
@@ -168,7 +169,7 @@ Omega <- as.array(coef(m, type = "Lambda"))[,,1]
 confint(m)["y.w100",]
 
 ## ----trt, echo = TRUE, message = FALSE-----------------------------------
-dnorm(cf1 / sqrt(2))
+pnorm(cf1 / sqrt(2))
 
 ## ----CAOdata, echo = FALSE, message = FALSE------------------------------
 load(system.file("rda", "Primary_endpoint_data.rda", package = "TH.data"))
@@ -206,9 +207,10 @@ mT <- Polr(strat_t ~ 1, data = CAOsurv, method = "probit")
 mN <- Polr(strat_n ~ 1, data = CAOsurv, method = "probit")
 
 ## ----CAO-Mmlt, echo = TRUE-----------------------------------------------
-m <- Mmlt(mT, mN, mentf, mage, msex, mecog, mpCR, 
-          data = CAOsurv, args = list(type = "ghalton", M = 250), 
-          optim = mltoptim(hessian = TRUE)["constrOptim"])
+### results in the paper were produced using M = 250
+### to reduce CRAN checking times, we use M = 50 here
+m <- Mmlt(mage, msex, mecog, mentf, mT, mN, mpCR,
+          data = CAOsurv, args = list(type = "ghalton", M = 50))
 prm <- "ypT0ypN0.randarm5-FU + Oxaliplatin"
 exp(coef(m)[prm])
 

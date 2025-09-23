@@ -107,7 +107,8 @@ if (any(!pkgs))
 }
 if (!interactive() && .Platform$OS.type != "unix")
 {
-    cat("Vignette only compiled under Unix alikes.")
+    cat(paste("Vignette only compiled under Unix alikes.",
+        "\\end{document}\n"))
     knitr::knit_exit()
 }
 @
@@ -386,7 +387,7 @@ Transforming this estimate to the probabilistic index via $\Phi(\hat{\tau}/\sqrt
 probability of obtaining a lower outcome in the control than in the treatment
 group:
 <<trt, echo = TRUE, message = FALSE>>=
-dnorm(cf1 / sqrt(2))
+pnorm(cf1 / sqrt(2))
 @
 
 \section{Binary outcome: Efficacy study of new chemotherapy}
@@ -475,9 +476,10 @@ Details on the estimation of the mixed continuous-discrete likelihood are given 
 
 Here, we fit the model
 <<CAO-Mmlt, echo = TRUE>>=
-m <- Mmlt(mT, mN, mentf, mage, msex, mecog, mpCR, 
-          data = CAOsurv, args = list(type = "ghalton", M = 250), 
-          optim = mltoptim(hessian = TRUE)["constrOptim"])
+### results in the paper were produced using M = 250
+### to reduce CRAN checking times, we use M = 50 here
+m <- Mmlt(mage, msex, mecog, mentf, mT, mN, mpCR,
+          data = CAOsurv, args = list(type = "ghalton", M = 50))
 prm <- "ypT0ypN0.randarm5-FU + Oxaliplatin"
 exp(coef(m)[prm])
 @

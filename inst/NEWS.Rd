@@ -2,6 +2,13 @@
 \name{NEWS}
 \title{NEWS file for the tram package}
 
+\section{Changes in Version 1.2-4 (2025-08-18)}{
+  \itemize{
+    \item{\code{summary.tram} now works for univariate models.}
+    \item{New \code{survtram} vignette.}
+  }
+}
+
 \section{Changes in Version 1.2-3 (2025-06-17)}{
   \itemize{
     \item{Update to \pkg{mlt} 1.6-6.}
@@ -9,6 +16,7 @@
           inference (\code{NAMI}) as an application of \code{Mmlt}.}
   }
 }
+
 
 \section{Changes in Version 1.2-2 (2025-05-09)}{
   \itemize{
