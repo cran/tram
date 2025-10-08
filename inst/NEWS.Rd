@@ -2,6 +2,12 @@
 \name{NEWS}
 \title{NEWS file for the tram package}
 
+\section{Changes in Version 1.2-5 (2025-10-07)}{
+  \itemize{
+    \item{Prepare for \pkg{mlt} 1.7-0 release.}
+  }
+}
+
 \section{Changes in Version 1.2-4 (2025-08-18)}{
   \itemize{
     \item{\code{summary.tram} now works for univariate models.}
