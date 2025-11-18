@@ -33,7 +33,7 @@ knitr::render_sweave()  # use Sweave environments
 knitr::set_header(highlight = '')  # do not \usepackage{Sweave}
 ## R settings
 options(prompt = "R> ", continue = "+  ", useFancyQuotes = FALSE)  # JSS style
-options(width = 75)
+options(width = 75, digits = 4)
 
 frmt1 <- function(x, digits = 1) {
     if (!is.numeric(x)) return(x)
@@ -120,22 +120,23 @@ immun <- structure(list(y = c(21.699999999999999, 23.899999999999999,
 m0 <- Lm(y ~ w, data = immun)
 
 ## ----cf0_cont, echo = TRUE, message = FALSE------------------------------
-coef(m0)		### marginal Cohen's d
-sqrt(vcov(m0))		### observed
-sqrt(2/nrow(immun) * (coef(m0)^2/4 + 2)) ### expected
-confint(m0)		### Wald
+coef(m0) ### marginal Cohen's d
+sqrt(vcov(m0)) ### SE from observed info
+sqrt(2/nrow(immun) * (coef(m0)^2/4 + 2)) ### SE from expected info (Lemma 1)
+confint(m0) ### Wald
 
 ## ----ami_cont, echo = TRUE, message = FALSE, results = "hide"------------
 m1 <- BoxCox(x ~ 1, data = immun)
 m <- Mmlt(m0, m1, formula = ~ 1, data = immun)
 
 ## ----cfseci_cont, echo = TRUE, message = FALSE---------------------------
-(cf1 <- coef(m)["y.w100"])	### marginal adjusted Cohen's d
-sqrt(diag(vcov(m))["y.w100"])	### observed
+(cf1 <- coef(m)["y.w100"]) ### marginal adjusted Cohen's d
+sqrt(diag(vcov(m))["y.w100"]) ### SE from observed info 
 
 ## ----setheo_cont, echo = TRUE, message = FALSE---------------------------
 lambda <- c(unclass(coef(m, type = "Lambdapar")))
-sqrt(2/nrow(immun) * ((1 + lambda^2)*cf1^2 + 8)/(4*(1 + lambda^2))) ### expected
+sqrt(2/nrow(immun) * ((1 + lambda^2)*cf1^2 + 8)/(4*(1 + lambda^2))) 
+### SE from expected info (Lemma 2)
 
 ## ----ci_cont, echo = TRUE, message = FALSE-------------------------------
 confint(m)["y.w100",]
@@ -180,12 +181,6 @@ rt <- table(CAOsurv$randarm)
 ## ----CAOoutcome, echo = TRUE, message = FALSE----------------------------
 CAOsurv$ypT0ypN0 <- factor(CAOsurv$path_stad == "ypT0ypN0")
 
-## ----CAO-glm, echo = TRUE, message = FALSE-------------------------------
-mg_w <- glm(ypT0ypN0 ~ randarm,
-            data = CAOsurv, family = binomial())
-exp(coef(mg_w)["randarm5-FU + Oxaliplatin"])
-exp(confint(glht(mg_w), calpha = univariate_calpha())$confint[2,-1])
-
 ## ----CAO-marg, echo = TRUE, message = FALSE------------------------------
 mpCR <- Polr(ypT0ypN0 ~ randarm, data = CAOsurv, na.action = na.pass, 
     method = "logistic")
@@ -207,10 +202,13 @@ mT <- Polr(strat_t ~ 1, data = CAOsurv, method = "probit")
 mN <- Polr(strat_n ~ 1, data = CAOsurv, method = "probit")
 
 ## ----CAO-Mmlt, echo = TRUE-----------------------------------------------
-### results in the paper were produced using M = 250
-### to reduce CRAN checking times, we use M = 50 here
+### results in the paper were produced using M = 250; to reduce CRAN
+### checking times, we use M = 50 here we also speed up things by
+### allowing the optimiser to stop early
+fastoptH <- mltoptim(abstol = 1e-3, reltol = 1e-3, hessian = TRUE)
 m <- Mmlt(mage, msex, mecog, mentf, mT, mN, mpCR,
-          data = CAOsurv, args = list(type = "ghalton", M = 50))
+          data = CAOsurv, args = list(type = "ghalton", M = 50),
+          optim = fastoptH)
 prm <- "ypT0ypN0.randarm5-FU + Oxaliplatin"
 exp(coef(m)[prm])
 
@@ -258,20 +256,22 @@ m <- Mmlt(xmod, coxph_w, data = flies, formula = ~ 1)
 Omega <- as.array(coef(m, type = "Lambda"))[,,1]
 1 - Omega[nrow(Omega), ncol(Omega)]^(-2)
 
-## ----trans_y, echo = TRUE, fig.width = 4, fig.height = 3.5, out.width='.6\\linewidth'----
+## ----trans_y, echo = TRUE, fig.width = 4, fig.height = 3.5, out.width='.4\\linewidth'----
 q <- 0:100
 cols <- c("grey20", "grey70")
-### nonparametric
-plot(q, log(-log(1 - ecdf(subset(flies, Treatment == "8 pregnant")$survival[,1])(q))), 
+
+plot(q, log(-log(1 - ecdf(subset(flies,  ### nonparametric
+     Treatment == "8 pregnant")$survival[,1])(q))), 
      main = "", xlab = "Time", type = "S", lwd = 1, 
      ylab = "cloglog(Probability)")
-lines(q, log(-log(1 - ecdf(subset(flies, Treatment == "8 virgin")$survival[,1])(q))), 
+lines(q, log(-log(1 - ecdf(subset(flies, 
+     Treatment == "8 virgin")$survival[,1])(q))), 
      type = "S", lty = 2, lwd = 1)
 legend("bottomright", lty = c(1, 2),
        legend = levels(flies$Treatment), bty = "n")
 
-### model-based
-nd <- expand.grid(survival = q, Treatment = sort(unique(flies$Treatment)))
+nd <- expand.grid(survival = q, ### model-based 
+                  Treatment = sort(unique(flies$Treatment)))
 nd$h <- predict(as.mlt(coxph_w), newdata = nd, type = "trafo")
 fm <- nd$Treatment == "8 virgin"
 lines(nd$survival[fm], nd$h[fm], lty = 2)
@@ -285,6 +285,51 @@ plot(smooth_terms(m))
 m <- CoxphME(survival ~ s(Thorax, k = 5), data = flies, 
              subset = Treatment == levels(Treatment)[2])
 plot(smooth_terms(m), add = TRUE, lty = 2) 
+
+## ----ovid_dat, echo = TRUE, message = FALSE------------------------------
+trt <- gl(2, 1, labels = c("Control", "Enoxaparin"))
+age <- gl(2, 1, labels = c("30-70", "> 70"))
+outcome <- gl(2, 1, labels = c("No event", "Event"))
+ovid <- expand.grid(trt = trt, age = age, outcome = outcome)
+ovid$weights <- c(220, 214, 10, 12, 6, 8, 2, 0)
+(ovid)
+
+## ----ovid-mht, echo = TRUE-----------------------------------------------
+mt <- mantelhaen.test(xtabs(weights ~ trt + outcome + age, data = ovid))
+(lORx_mt <- log(mt$estimate))
+
+## ----ovid-cond, echo = TRUE----------------------------------------------
+mtrtx_ovid <- glm(outcome ~ trt + age, data = ovid, weights = weights, 
+		  family = binomial())
+(lORx_ovid <- coef(mtrtx_ovid)["trtEnoxaparin"])
+
+## ----ovid-marg, echo = TRUE----------------------------------------------
+mtrt_ovid<- Polr(outcome ~ trt, data = ovid, weights = weights, 
+                 method = "logistic")
+mage_ovid <- Polr(age ~ 1, data = ovid, weights = weights)
+
+## ----ovid_mmlt, echo = TRUE----------------------------------------------
+m_ovid <- Mmlt(mtrt_ovid, mage_ovid, data = ovid)
+prm <- "outcome.trtEnoxaparin"
+(lORm_ovid <- coef(m_ovid)[prm])
+(SE_ovid <- sqrt(vcov(m_ovid)[prm, prm]))
+
+## ----ethic_dat, echo = TRUE, message = FALSE-----------------------------
+trt <- gl(2, 1, labels = c("Control", "Enoxaparin"))
+outcome <- gl(2, 1, labels = c("No event", "Event"))
+ethic <- expand.grid(trt = trt, outcome = outcome)
+ethic$weights <- c(96, 88, 12, 12)
+(ethic)
+
+## ----ethic_margmod, echo = TRUE------------------------------------------
+mtrt_ethic <- Polr(outcome ~ trt, data = ethic, 
+                   weights = weights, method = "logistic")
+prmeth <- "trtEnoxaparin"
+(lOR_ethic <- coef(mtrt_ethic)[prmeth])
+(SE_ethic <- sqrt(vcov(mtrt_ethic)[prmeth, prmeth]))
+
+## ----ovid_polycor, echo = TRUE-------------------------------------------
+(polycor <- as.array(coef(m_ovid, type = "Cor"))["outcome","age",1])
 
 ## ----nami-pkgs-funs, echo = FALSE, results = "hide"----------------------
 if (file.exists("packages.bib")) file.remove("packages.bib")

@@ -44,7 +44,7 @@ knitr::render_sweave()  # use Sweave environments
 knitr::set_header(highlight = '')  # do not \usepackage{Sweave}
 ## R settings
 options(prompt = "R> ", continue = "+  ", useFancyQuotes = FALSE)  # JSS style
-options(width = 75)
+options(width = 75, digits = 4)
 
 ### ecdf plots
 myprepanel <- function (x, y, f.value = NULL, ...) 
@@ -589,8 +589,8 @@ sn <- sort(unique(CAOsurv$strat_n))
 su <- c(1, 1700)
 add <- c(0,  max(CAOsurv$iDFS[, "time2"]) - su[2])
 ylim <- c(-.05, 1.05)
-tmp <- as.mlt(Coxph(iDFS | 0 + strat_n:strat_t:randarm ~ 1, data = CAOsurv, 
-                    support = su, add = add, log_first = TRUE))
+tmp <- as.mlt(Coxph(iDFS | 0 + strat_n:strat_t:randarm ~ 1, data = CAOsurv))
+                    ### support = su, add = add))
 nd <- expand.grid(strat_n = sn, strat_t = st, randarm = ra)
 q <- mkgrid(tmp, 100)[[1]]
 surv <- predict(tmp, newdata = nd, type = "survivor", q = q)
@@ -631,7 +631,9 @@ quantile(exp(-rbeta[, ncol(rbeta)]), prob = c(.025, .5, .975))
 
 ## ----mtram-CAO_SR_2, cache = FALSE---------------------------------------
 CAO_SR_2 <- Survreg(iDFS2 | 0 + strat_n:strat_t ~ randarm, data = CAOsurv)
-CAO_SR_2_mtram <- mtram(CAO_SR_2, ~ (1 | Block), data = CAOsurv)
+### speed-up vignette compilation by allowing early stopping during optimisation
+fastoptH <- mltoptim(abstol = 1e-3, reltol = 1e-3, hessian = TRUE)
+CAO_SR_2_mtram <- mtram(CAO_SR_2, ~ (1 | Block), data = CAOsurv, optim = fastoptH)
 logLik(CAO_SR_2_mtram)
 (cf <- coef(CAO_SR_2_mtram))
 (OR_2 <- exp(-cf["randarm5-FU + Oxaliplatin"] / sqrt(cf["gamma1"]^2 + 1)))
@@ -645,10 +647,11 @@ rbeta <- rbeta[, -ncol(rbeta)] / sqrt(s^2 + 1)
 quantile(exp(-rbeta[, ncol(rbeta)]), prob = c(.025, .5, .975))
 
 ## ----mtram-CAO_Cox_2, cache = FALSE--------------------------------------
-CAO_Cox_2 <- Coxph(iDFS2 | 0 + strat_n:strat_t ~ randarm, data = CAOsurv, 
-                   support = c(1, 1700), log_first = TRUE, order = 4)
+CAO_Cox_2 <- Coxph(iDFS2 | 0 + strat_n:strat_t ~ randarm, data = CAOsurv)#, 
+                   ### support = c(1, 1700), order = 4)
 logLik(CAO_Cox_2)
-CAO_Cox_2_mtram <- mtram(CAO_Cox_2, ~ (1 | Block), data = CAOsurv)
+CAO_Cox_2_mtram <- mtram(CAO_Cox_2, ~ (1 | Block), data = CAOsurv, 
+                         optim = fastoptH)
 logLik(CAO_Cox_2_mtram)
 coef(CAO_Cox_2_mtram)
 
@@ -673,7 +676,7 @@ ci_man <- quantile(-rbeta[, ncol(rbeta)], prob = c(.025, .5, .975))
 
 ## ----tramME-CAO_SR, cache = FALSE----------------------------------------
 CAO_Cox_2_tramME <- CoxphME(iDFS2 | 0 + strat_n:strat_t ~ randarm + (1 | Block), 
-                            data = CAOsurv, log_first = TRUE)
+                            data = CAOsurv)
 
 ## ----tramME-CAO_SR-hr, cache = FALSE-------------------------------------
 exp(coef(CAO_Cox_2_tramME))

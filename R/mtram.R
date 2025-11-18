@@ -17,16 +17,16 @@ mtram <- function(object, formula, data,
                   grd = SparseGrid::createSparseGrid(type = "KPU", dimension = length(rt$cnms[[1]]), 
                                                      k = 10),
                   tol = .Machine$double.eps,
-                  optim = mltoptim(auglag = list(maxtry = 5)),
+                  optim = mltoptim(hessian = TRUE),
                   ...) {
 
     call <- match.call()
     
     stopifnot(inherits(object, "mlt_fit"))
     
-    bar.f <- lme4::findbars(formula)
-    mf <- model.frame(lme4::subbars(formula), data = data)
-    rt <- lme4::mkReTrms(bar.f, mf)
+    bar.f <- reformulas::findbars(formula)
+    mf <- model.frame(reformulas::subbars(formula), data = data)
+    rt <- reformulas::mkReTrms(bar.f, mf)
     
     ZtW <- rt$Zt
     Lambdat <- rt$Lambdat

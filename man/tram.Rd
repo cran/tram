@@ -14,11 +14,11 @@ tram(formula, data, subset, weights, offset, cluster, na.action = na.omit,
                       "Exponential", "Cauchy", "Laplace"), 
      frailty = c("None", "Gamma", "InvGauss", "PositiveStable"),
      transformation = c("discrete", "linear", "logarithmic", "smooth"), 
-     LRtest = TRUE, prob = c(0.1, 0.9), support = NULL, 
+     LRtest = TRUE, log_first = NULL, prob = NULL, support = NULL, 
      bounds = NULL, add = c(0, 0), order = 6, 
      negative = TRUE, remove_intercept = TRUE, 
-     scale = TRUE, scale_shift = FALSE, extrapolate = FALSE, 
-     log_first = FALSE, sparse_nlevels = Inf,
+     scaleparm = is.null(isX), scale_shift = FALSE, extrapolate = FALSE, 
+     sparse_nlevels = Inf,
      model_only = FALSE, constraints = NULL, ...)
 tram_data(formula, data, subset, weights, offset, cluster, na.action = na.omit) 
 }
@@ -49,7 +49,13 @@ tram_data(formula, data, subset, weights, offset, cluster, na.action = na.omit)
           clustered covariances.
   }
   \item{na.action}{a function which indicates what should happen when the data
-          contain \code{NA}s.  The default is set to \code{na.omit}.
+          contain \code{NA}s.  The default is set to \code{na.omit}. Note
+          that is is possible to have \code{NA}s in the response. In this
+          case, the contribution to the log-likelihood is zero.
+          Unfortunately, \code{na.pass} passes on missing values in both
+          response and covariates, so one has to filter out observations
+          with missing covariates in the \code{data} argument in cases where
+          one wants to allow missing response observations.
   }
   \item{distribution}{character specifying how the transformation function
                       is mapped into probabilities. Available choices
@@ -69,6 +75,8 @@ tram_data(formula, data, subset, weights, offset, cluster, na.action = na.omit)
   \item{LRtest}{logical specifying if a likelihood-ratio test for the null
                 of all coefficients in the linear predictor being zero shall be performed.
   }
+  \item{log_first}{logical; if \code{TRUE}, a Bernstein polynomial is
+                   defined on the log-scale.}
   \item{prob}{two probabilities giving quantiles of the response defining the support of a smooth
       Bernstein polynomial (if \code{transformation = "smooth"}).
   }
@@ -96,9 +104,11 @@ tram_data(formula, data, subset, weights, offset, cluster, na.action = na.omit)
   standard errors. Note that linear scale predictors are always fitted
   without intercept.
   }
-  \item{scale}{logical defining if variables in the linear predictor shall
+  \item{scaleparm}{logical defining if variables in the linear predictor shall
                be scaled. Scaling is internally used for model estimation,
-               rescaled coefficients are reported in model output.
+               rescaled coefficients are reported in model output. The
+               default is the use rescaling except for location-scale models, where we
+               compute the numerical Hessian.
   }
   \item{scale_shift}{a logical choosing between two different model types in
           the presence of a \code{scaling} term, see \code{\link[mlt]{ctm}}.
@@ -112,8 +122,6 @@ tram_data(formula, data, subset, weights, offset, cluster, na.action = na.omit)
   \item{sparse_nlevels}{integer; use a sparse model matrix if the number
       of levels of an ordered factor is at least as large as
       \code{sparse_nlevels}.}
-  \item{log_first}{logical; if \code{TRUE}, a Bernstein polynomial is
-                   defined on the log-scale.}
   \item{model_only}{logical, if \code{TRUE} the unfitted model is returned.
   }
   \item{constraints}{additional constraints on regression coefficients in
@@ -148,6 +156,23 @@ The underlying theory of most likely transformations
 is presented in Hothorn et al. (2018), computational
 and modelling aspects in more complex situations 
 are discussed by Hothorn (2018).
+
+For smooth transformation functions parameterised in terms of a polynomial
+in Bernstein form, the default was to define the support of this polynomial
+by the 10 and 90 percent quantile of the unconditional outcome distribution
+before \pkg{tram} version 1.3-0.  In addition, arguments \code{log_first},
+\code{support}, and \code{bounds} were used to define characteristics of
+these polynomials in Bernstein form.  Starting with 1.3-0, the response
+observations are first transformed into a symmetric distribution and then
+modelled by a polynomial in Bernstein form whenever \code{order > 1}, ie,
+for non-linear transformation functions.  This renders a data-driven
+definition of the support unnecessary and leads to more stable estimates. 
+However, we now refrain from evaluating the transformation function (and
+therefore distribution, density, etc functions) outside the range of the
+response observations.
+
+The old behaviour can be brought back by specifying at least one of 
+the \code{support}, \code{prob}, or \code{log_first} arguments. 
 
 }
 \value{
