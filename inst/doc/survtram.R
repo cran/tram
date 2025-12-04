@@ -354,12 +354,12 @@ score_test(mc)
 perm_test(mc)
 # plot(as.mlt(mc), type = "survivor", newdata = nd1, col = col)
 
-## ----COX-lHaz-try--------------------------------------------------------
-cb <- confband(as.mlt(mc), newdata =  nd1[1,, drop = FALSE], K = 20, cheat = 100)
+## ----COX-lHaz-cb, cache = TRUE-------------------------------------------
+cb <- confband(as.mlt(mc), newdata =  nd1[1,, drop = FALSE], K = 400, cheat = 200)
+cb <- cb[cb[,"q"] > 20,] ### remove time = 0
 
 ## ----COX-lHaz-plot-------------------------------------------------------
 eval(par_main)
-cb <- cb[cb[,"q"] > 0,] ### remove time = 0
 plot(cb[, "q"], cb[, "Estimate"], log = "x", type = "n",
   xlab = lxlab, ylab = ylablHaz, xlim = xlimlHaz <- range(cb[, "q"]),
   ylim = range(cb[, -1]))
@@ -369,12 +369,13 @@ polygon(c(cb[, "q"], rev(cb[, "q"])), c(cb[, "lwr"], rev(cb[, "upr"])),
 lines(cb[, "q"], cb[, "Estimate"], lwd = lwd)
 
 ## ----fastopt-------------------------------------------------------------
-fastopt <- mltoptim(abstol = 1e-3, reltol = 1e-3)
-fastoptH <- mltoptim(abstol = 1e-3, reltol = 1e-3, hessian = TRUE)
+fastopt <- mltoptim(abstol = 1e-3, reltol = 1e-3) 	 
+fastoptH <- mltoptim(abstol = 1e-3, reltol = 1e-3, hessian = TRUE) 	 
 
 ## ----STRAT-model-fit, cache = TRUE---------------------------------------
 mcst <- 
-Coxph(iDFS | strat ~ randarm, data = CAOsurv, optim = fastopt)
+Coxph(iDFS | strat ~ randarm, data = CAOsurv,
+  optim = fastopt)
 
 ## ----STRAT-summary, cache = TRUE, results = "hide", fig.show = "hide"----
 summary(mcst)
@@ -382,7 +383,7 @@ score_test(mcst)
 perm_test(mcst)
 
 ## ----STRAT-lHaz-plot-----------------------------------------------------
-plot(as.mlt(mcst), newdata = nd2, q = q[q > 0], type = "logcumhazard", log = "x",
+plot(as.mlt(mcst), newdata = nd2, q = unname(cb[, 1]), type = "logcumhazard", log = "x",
   lty = lty <- 1:4, xlab = lxlab, ylab = ylablHaz, xlim = xlimlHaz,
   col = 1, lwd = lwd)
 
@@ -408,11 +409,13 @@ plot.risktab(tvar = "iDFStime")
 plot(as.mlt(mcs), type = "survivor", newdata = nd1, col = col, add = TRUE)
 
 ## ----SCOX-HR-plot, echo = FALSE------------------------------------------
-qHR <- seq(50, max(q), by = 1)
-cumhaz <- predict(mcs, type = "cumhazard", newdata = nd1, q = qHR)
+s <- mkgrid(mcs, n = 500)
+qHR <- s$iDFS <- s$iDFS[s$iDFS > 20]
+xlimHR <- range(qHR)
+cumhaz <- predict(mcs, type = "cumhazard", q = qHR, newdata = nd1)
 cumhr <- unname(cumhaz[, 2] / cumhaz[, 1])
 plot(qHR, cumhr, type = "l", ylab = ylabcumHR, xlab = xlab,
-  ylim = ylimHR, xlim = xlimHR <- range(qHR), lwd = lwd)
+  ylim = ylimHR, xlim = xlimHR , lwd = lwd)
 
 abline(h = exp(coef(mc)), lty = 2, lwd = 1) ## constant HR
 abline(h = 1, lty = 3) ## HR = 1
@@ -427,12 +430,8 @@ logLik(mcv)
 ## ----TCOX-HR, cache = TRUE-----------------------------------------------
 mcv <- as.mlt(mcv)
 
-## grid (was n = 500, qmvnorm failed)
-s <- mkgrid(mcv, 39)
-s$iDFS <- s$iDFS[s$iDFS >= min(xlimHR) & s$iDFS <= max(xlimHR)]
-nd3 <- expand.grid(s)
-
 ## confint
+nd3 <- expand.grid(s) ## grid from SCOX
 K <- model.matrix(mcv$model, data = nd3)
 Kyes <- K[nd3$randarm == levels(nd3$randarm)[2],]
 Kyes[,grep("Intercept", colnames(Kyes))] <- 0  
@@ -486,7 +485,7 @@ tab
 ## ----DEPCENS-model-fit, cache = TRUE-------------------------------------
 md <- 
 Coxph(Surv(OStime, event = DepCevent) ~ randarm, data = CAOsurv, 
-      optim = fastoptH)
+  optim = fastoptH)
 
 ## ----DEPCENS-summary, cache = TRUE, results = "hide", fig.show = 'hide'----
 summary(md)
@@ -509,7 +508,6 @@ confint(mcME)
 
 ## ----COXME-margsurv, eval = FALSE----------------------------------------
 # ## computationally intensive
-# if (!file.exists("ME-margdist.rda")) {
 # mod <- mcME
 # 
 # ## A function to evaluate the joint cdf of the response and the random effects:
@@ -533,10 +531,8 @@ confint(mcME)
 # ## Calls marginalCDF on each row of nd
 # ## (done in parallel to speed up computations)
 # mp <- parallel::mclapply(split(nd, seq(nrow(nd))),
-#   marginalCDF, mod = mod, mc.cores = 4)
+#   marginalCDF, mod = mod, mc.cores = 1)
 # mp <- do.call("rbind", mp)
-# save(mp, file = "ME-margdist.rda")
-# } else load("ME-margdist.rda")
 # mp$surv <- with(mp, 1 - cdf)
 # 
 # <<plot-surv-iDFS, eval = FALSE>>

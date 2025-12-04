@@ -647,8 +647,7 @@ rbeta <- rbeta[, -ncol(rbeta)] / sqrt(s^2 + 1)
 quantile(exp(-rbeta[, ncol(rbeta)]), prob = c(.025, .5, .975))
 
 ## ----mtram-CAO_Cox_2, cache = FALSE--------------------------------------
-CAO_Cox_2 <- Coxph(iDFS2 | 0 + strat_n:strat_t ~ randarm, data = CAOsurv)#, 
-                   ### support = c(1, 1700), order = 4)
+CAO_Cox_2 <- Coxph(iDFS2 | 0 + strat_n:strat_t ~ randarm, data = CAOsurv)
 logLik(CAO_Cox_2)
 CAO_Cox_2_mtram <- mtram(CAO_Cox_2, ~ (1 | Block), data = CAOsurv, 
                          optim = fastoptH)
@@ -656,23 +655,35 @@ logLik(CAO_Cox_2_mtram)
 coef(CAO_Cox_2_mtram)
 
 ## ----mtram-CAO-CI-3, echo = FALSE----------------------------------------
-S <- vcov(CAO_Cox_2_mtram)
-rbeta <- rmvnorm(10000, mean = coef(CAO_Cox_2_mtram), 
-                 sigma = S)
-s <- rbeta[,ncol(rbeta)]
-rbeta <- rbeta[,-ncol(rbeta)] / sqrt(s^2 + 1)
-quantile(exp(rbeta[, ncol(rbeta)]), prob = c(.025, .5, .975))
+S <- try(vcov(CAO_Cox_2_mtram)) ### possible problematic with openBLAS
+if (!inherits(S, "try-error")) {
+    rbeta <- rmvnorm(10000, mean = coef(CAO_Cox_2_mtram), 
+                     sigma = S)
+    s <- rbeta[,"gamma1"]
+    rbeta <- rbeta[,colnames(rbeta) != "gamma1"] / sqrt(s^2 + 1)
+    print(quantile(exp(rbeta[, "randarm5-FU + Oxaliplatin"]), 
+                   prob = c(.025, .5, .975)))
+}
 
 ## ----mtram-CAO_PI--------------------------------------------------------
 nd <- CAOsurv[1:2, ]
 tmp <- CAO_Cox_2
-tmp$coef <- coef(CAO_Cox_2_mtram)[-22] / sqrt(coef(CAO_Cox_2_mtram)[22]^2 + 1)
+cf <- coef(CAO_Cox_2_mtram)
+tmp$coef <- cf[names(cf) != "gamma1"] / sqrt(cf["gamma1"]^2 + 1)
 (CAO_Cox_PI <- PI(tmp, newdata = nd[2, ], reference = nd[1, ],
                   one2one = TRUE, conf.level = .95))[1, ]
 
-## ----mtram-CAO_PI_man----------------------------------------------------
-ci_man <- quantile(-rbeta[, ncol(rbeta)], prob = c(.025, .5, .975))
-(CAO_Cox_PIm <- PI(ci_man, link = "minimum extreme value"))
+## ----mtram-CAO_PI-echo---------------------------------------------------
+nd <- CAOsurv[1:2, ]
+tmp <- CAO_Cox_2
+cf <- coef(CAO_Cox_2_mtram)
+tmp$coef <- cf[names(cf) != "gamma1"] / sqrt(cf["gamma1"]^2 + 1)
+(CAO_Cox_PI <- PI(tmp, newdata = nd[2, ], reference = nd[1, ],
+                  one2one = TRUE, conf.level = .95))[1, ]
+
+## ----mtram-CAO_PI_man, eval = FALSE--------------------------------------
+# ci_man <- quantile(-rbeta[, ncol(rbeta)], prob = c(.025, .5, .975))
+# PI(ci_man, link = "minimum extreme value")
 
 ## ----tramME-CAO_SR, cache = FALSE----------------------------------------
 CAO_Cox_2_tramME <- CoxphME(iDFS2 | 0 + strat_n:strat_t ~ randarm + (1 | Block), 
