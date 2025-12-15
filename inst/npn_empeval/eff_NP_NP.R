@@ -1,7 +1,7 @@
 
 source("setup.R")
 library("tram")
-source("fit.R")
+source("../fit.R")
 
 load("data.rda")
 
@@ -11,10 +11,7 @@ run <- function(i) {
     ret <- matrix(NA, nrow = 1, ncol = 3)
     colnames(ret) <- c("Est", "SE", "Time")
 
-    ### at least one continuous variable
-    if (all(sapply(d[[i]], is.factor))) return(ret)
-
-    ret[1, "Time"] <- system.time(mm <- try(fit(d[[i]], as.R.interval = TRUE, 
+    ret[1, "Time"] <- system.time(mm <- try(fit(d[[i]], as.R.ordered = TRUE, 
                                                 se = TRUE, seed = args[i,"seed"])))["user.self"]
     if (inherits(mm, "try-error")) {
         ret[1, "Time"] <- NA
@@ -30,4 +27,4 @@ run <- function(i) {
 
 ret <- do.call("rbind", mclapply(1:nrow(args), run, mc.cores = MC))
 
-save(ret, file = "ret_eff_NP_P.rda")
+save(ret, file = "ret_eff_NP_NP.rda")
