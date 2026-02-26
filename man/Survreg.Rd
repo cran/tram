@@ -62,6 +62,11 @@ expectation response (but this relationship is nonlinear).
 Parameters are log-hazard ratios comparing a reference with 
 treatment (or a one unit increase in a numeric variable).
 
+Details about the model parameterisation, estimation and implementation 
+can be found in \bibcitet{tram::Hothorn:Moest:Buehlmann:2017},
+\bibcitet{tram::Siegfried:Tamasi:Hothorn:2026}, and
+\bibcitet{tram::Hothorn:2018}.
+
 }
 \value{
 An object of class \code{Survreg},  with corresponding \code{coef},
@@ -69,9 +74,7 @@ An object of class \code{Survreg},  with corresponding \code{coef},
 \code{print}, \code{plot} and \code{predict} methods.
 }
 \references{
-  Torsten Hothorn, Lisa Moest, Peter Buehlmann (2018), Most Likely
-  Transformations, \emph{Scandinavian Journal of Statistics}, \bold{45}(1),
-  110--134, \doi{10.1111/sjos.12291}.
+  \bibshow{*}
 }
 \examples{
 

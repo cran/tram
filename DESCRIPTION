@@ -1,7 +1,7 @@
 Package: tram
 Title: Transformation Models
-Version: 1.3-2
-Date: 2025-12-15
+Version: 1.4-0
+Date: 2026-02-25
 Authors@R: c(person("Torsten", "Hothorn", role = c("aut", "cre"),
                     email = "Torsten.Hothorn@R-project.org", comment = c(ORCID = "0000-0001-8301-0471")),
              person("Luisa", "Barbanti", role = "ctb",
@@ -40,13 +40,13 @@ Suggests: MASS, TH.data, trtf (>= 0.3-3), mlbench, knitr, quantreg,
         randomForestSRC, tramME, glmmTMB, geepack, ranger, eha,
         flexsurv, frailtyEM, frailtypack, gamlss.cens, icenReg, mpr,
         rms, rstpm2, timereg, Stat2Data, cotram, latex2exp, tramvs,
-        AER, KONPsurv, gamlss.data, xtable, english
+        AER, KONPsurv, gamlss.data, xtable, english, bibtex
 VignetteBuilder: knitr
-URL: http://ctm.R-forge.R-project.org
+URL: https://ctm.R-forge.R-project.org
 Encoding: UTF-8
 License: GPL-2
 NeedsCompilation: no
-Packaged: 2025-12-15 13:11:26 UTC; hothorn
+Packaged: 2026-02-26 10:31:41 UTC; hothorn
 Author: Torsten Hothorn [aut, cre] (ORCID:
     <https://orcid.org/0000-0001-8301-0471>),
   Luisa Barbanti [ctb] (ORCID: <https://orcid.org/0000-0001-5352-5802>),
@@ -59,4 +59,4 @@ Author: Torsten Hothorn [aut, cre] (ORCID:
   Nadja Klein [ctb]
 Maintainer: Torsten Hothorn <Torsten.Hothorn@R-project.org>
 Repository: CRAN
-Date/Publication: 2025-12-15 14:30:09 UTC
+Date/Publication: 2026-02-26 15:30:02 UTC

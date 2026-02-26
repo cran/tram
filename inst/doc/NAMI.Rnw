@@ -825,7 +825,7 @@ pkgbib <- function(pkg) {
     b <- gsub("Gruen", "Gr{\\\\\"u}n", b)
     b[1] <- paste("@Manual{pkg:", pkg, ",", sep = "")
 #    if (is.na(b["url"])) {
-#        b[length(b)] <- paste("   URL = {http://CRAN.R-project.org/package=",
+#        b[length(b)] <- paste("   URL = {https://CRAN.R-project.org/package=",
 #                              pkg, "},", sep = "")
 #    }
     b <- b[names(b) != "url"]
@@ -846,7 +846,7 @@ sapply(pkgs, pkgbib)
 out <- sapply(pkgs, pkg)
 @
 
-\bibliography{mlt}
+\bibliography{\Sexpr{gsub("\\.bib", "", system.file("REFERENCES.bib", package = "tram"))},packages}
 
 
 \end{document}
