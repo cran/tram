@@ -134,7 +134,7 @@ m <- Mmlt(m0, m1, formula = ~ 1, data = immun)
 sqrt(diag(vcov(m))["y.w100"]) ### SE from observed info 
 
 ## ----setheo_cont, echo = TRUE, message = FALSE---------------------------
-lambda <- c(unclass(coef(m, type = "Lambdapar")))
+lambda <- c(unclass(coef(m, type = "Lambda")))
 sqrt(2/nrow(immun) * ((1 + lambda^2)*cf1^2 + 8)/(4*(1 + lambda^2))) 
 ### SE from expected info (Lemma 2)
 
@@ -145,7 +145,7 @@ confint(m)["y.w100",]
 coef(m, type = "Corr")
 
 ## ----r2_cont, echo = TRUE, message = FALSE-------------------------------
-Omega <- as.array(coef(m, type = "Lambda"))[,,1]
+Omega <- as.array(coef(m, type = "Omega"))[,,1]
 1 - Omega[nrow(Omega), ncol(Omega)]^(-2)
 
 ## ----cfsec_cont, echo = TRUE, message = FALSE----------------------------
@@ -162,7 +162,7 @@ m0 <- BoxCox(y ~ w, data = immun)
 m <- Mmlt(m0, m1, formula = ~ 1, data = immun)
 
 ## ----r2_boxcox, echo = TRUE, message = FALSE-----------------------------
-Omega <- as.array(coef(m, type = "Lambda"))[,,1]
+Omega <- as.array(coef(m, type = "Omega"))[,,1]
 1 - Omega[nrow(Omega), ncol(Omega)]^(-2)
 
 ## ----coef_boxcox_cont, echo = TRUE, message = FALSE----------------------
@@ -224,7 +224,7 @@ i <- which.max(abs(mr[-length(mr)]))
 (mr <- mr[i])
 
 ## ----CAO-r2, echo = TRUE, message = FALSE--------------------------------
-Omega <- as.array(coef(m, type = "Lambda"))[,,1]
+Omega <- as.array(coef(m, type = "Omega"))[,,1]
 1 - Omega[nrow(Omega), ncol(Omega)]^(-2)
 
 ## ----CAO-se, echo = TRUE, message = FALSE--------------------------------
@@ -253,7 +253,7 @@ m <- Mmlt(xmod, coxph_w, data = flies, formula = ~ 1)
 (ci1 <- confint(m)["survival.Treatment8 virgin",])
 
 ## ----flies_r2, echo = TRUE, message = FALSE------------------------------
-Omega <- as.array(coef(m, type = "Lambda"))[,,1]
+Omega <- as.array(coef(m, type = "Omega"))[,,1]
 1 - Omega[nrow(Omega), ncol(Omega)]^(-2)
 
 ## ----trans_y, echo = TRUE, fig.width = 4, fig.height = 3.5, out.width='.4\\linewidth'----

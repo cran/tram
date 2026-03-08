@@ -5,6 +5,7 @@
 
 \documentclass[article,nojss,shortnames]{jss}
 
+
 %% packages
 \usepackage{thumbpdf}
 \usepackage{amsfonts,amstext,amsmath,amssymb,amsthm}

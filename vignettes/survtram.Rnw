@@ -1,8 +1,9 @@
-\documentclass[article,nojss,shortnames]{jss}
 
 %\VignetteEngine{knitr::knitr}
 %\VignetteIndexEntry{Smooth Transformation Models for Survival Analysis: A Tutorial Using R}
 %\VignetteDepends{mlt, tram, trtf, SparseGrid, ATR, tramME, multcomp, coin, TH.data, survival, colorspace, xtable, english}
+
+\documentclass[article,nojss,shortnames]{jss}
 
 
 \usepackage[]{graphicx}
