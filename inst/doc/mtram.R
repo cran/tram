@@ -705,6 +705,17 @@ exp(confint(CAO_Cox_2_tramME, parm = "randarm5-FU + Oxaliplatin",
 # sd <- sqrt(diag(vcov(m)))
 # exp(coef(m) + c(-1, 0, 1) * qnorm(.975) * sd)
 
+## ----bib, echo = FALSE---------------------------------------------------
+thisdir <- getwd()
+bibfile <- system.file("REFERENCES.bib", package = "tram")
+### bibfile may contain spaces LaTeX is unable to deal with on MacOS it seems
+if (file.copy(bibfile, to = thisdir, overwrite = TRUE)) {
+    bibfile <- file.path(thisdir, "REFERENCES.bib")
+} else {
+    ### hope for the best
+    bibfile <- file.path("..", "inst", "REFERENCES.bib")
+}
+
 ## ----sim, eval = FALSE---------------------------------------------------
 # source(system.file("simulations", "mtram_sim.R", package = "tram"), echo = TRUE)
 

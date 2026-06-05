@@ -4,7 +4,7 @@ library("mvtnorm")
 library("qrng")
 
 fit <- function(data, mfun = BoxCox, as.R.interval = FALSE, as.R.ordered = FALSE,
-                optim = mmltoptim(trace = FALSE), 
+                optim = mltoptim(trace = FALSE), 
                 M = 500,
                 conditional = FALSE, 
                 domargins = TRUE, sequentialfit = FALSE, se = FALSE, seed = NULL, ...) { 
@@ -42,19 +42,17 @@ fit <- function(data, mfun = BoxCox, as.R.interval = FALSE, as.R.ordered = FALSE
     m$conditional <- conditional
     m$domargins <- domargins
     m$sequentialfit <- sequentialfit
-    dJ <- ncol(data) 
-    if (dJ > 1L)
-        m$args <- list(M = M, w = t(ghalton(M * nrow(data), d = dJ - 1)))
+    m$args <- list(seed = 1, type = c("ghalton"), M = M)
     ### might want to switch to nloptr if hessian is not necessary
     # if (!se) optim <- optim["nloptr"]
     m$optim <- optim
-    ret <- do.call("mmlt", m)
-    L <- coef(ret, type = "Lambdapar")
+    ret <- do.call("Mmlt", m)
+    L <- coef(ret, type = "Lambda")
     if (!se) return(L)
 
     mp <- sum(sapply(lapply(marg, function(x) coef(as.mlt(x), fixed = FALSE)), length))
     se <- sqrt(diag(vcov(ret)))
     se <- se[-(1:mp)]
     se <- ltMatrices(se, byrow = TRUE)
-    return(list(L = L, se = se))
+    return(list(L = L, se = se, lL = logLik(ret)))
 }

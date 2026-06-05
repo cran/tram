@@ -387,3 +387,14 @@ pkgs <- c("tram")
 sapply(pkgs, pkgbib)
 out <- sapply(pkgs, pkg)
 
+## ----bib, echo = FALSE---------------------------------------------------
+thisdir <- getwd()
+bibfile <- system.file("REFERENCES.bib", package = "tram")
+### bibfile may contain spaces LaTeX is unable to deal with on MacOS it seems
+if (file.copy(bibfile, to = thisdir, overwrite = TRUE)) {
+    bibfile <- file.path(thisdir, "REFERENCES.bib")
+} else {
+    ### hope for the best
+    bibfile <- file.path("..", "inst", "REFERENCES.bib")
+}
+

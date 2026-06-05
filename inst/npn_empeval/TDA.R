@@ -25,8 +25,8 @@ cols2 <- diverging_hcl(2, palette = "Blue-Red", alpha = .8)
 
 
 ## ----HCCdata, echo = FALSE, cache = TRUE--------------------------------------
-### Load data
-dat <- read.xlsx("https://datadryad.org/api/v2/files/44697/download", sheet = 1)
+tf <- "data/HCC_biomarker_160206_data.xlsx"
+dat <- read.xlsx(tf, sheet = 1)
 d <- with(dat, data.frame(id = 1:nrow(dat),
                           D = HCC_studyGr,
                           AFP = AFP_ng_per_ml,
@@ -85,15 +85,15 @@ ecdfplot(~ obs | Biomarker, data = pd, groups = D, xlab = "log(Biomarker)",
 ## ----LDA_convex, echo = FALSE, cache = TRUE-----------------------------------
 Y <- t(dd[, bcol])
 Xd <- t(model.matrix(~ D, data = dd))
-L <- Variable(J, J)
-B <- Variable(J, 2)
+L <- Variable(c(J, J))
+B <- Variable(c(J, 2))
 constr <- list(L[upper.tri(L, diag = FALSE)] == 0, diag(L) >= 0)
 obj <- 2 * sum(log(diag(L))) - sum_squares(L %*% Y - B %*% Xd) / ncol(Y)
 prob <- Problem(Maximize(obj), constr)
-result <- solve(prob)#, solver = "SCS")
-Lhat <- result$getValue(L)
+result <- psolve(prob)#, solver = "SCS")
+Lhat <- value(L)
 Lhat <- ltMatrices(Lhat[lower.tri(Lhat, diag = TRUE)], diag = TRUE)
-Bhat <- result$getValue(B)
+Bhat <- value(B)
 Lhat1 <- ltMatrices(invcholD(Lhat, D = 1 / diagonals(Lhat)), byrow = TRUE)
 mu <- solve(Lhat, Bhat)
 mu0 <- mu[,1]
@@ -289,4 +289,3 @@ rn <- gsub(".(Intercept)", "", rownames(ctab), fixed = TRUE)
 rn <- gsub(".", ",", rn, fixed = TRUE)
 for (i in 1:nrow(ctab))
     cat(rn[i], " & ", paste(paste("$", frt(ctab[i,], digits = 3, width = 3), "$"), collapse = " &"), "\\\\", "\n")
-

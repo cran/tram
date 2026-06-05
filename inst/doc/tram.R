@@ -356,6 +356,17 @@ Coxph_GBSG2_3 <- Coxph(Surv(time, cens) ~ int + horTh, data = GBSG2,
 logLik(Coxph_GBSG2_4)
 coef(Coxph_GBSG2_4)[, "horThyes"]
 
+## ----bib, echo = FALSE---------------------------------------------------
+thisdir <- getwd()
+bibfile <- system.file("REFERENCES.bib", package = "tram")
+### bibfile may contain spaces LaTeX is unable to deal with on MacOS it seems
+if (file.copy(bibfile, to = thisdir, overwrite = TRUE)) {
+    bibfile <- file.path(thisdir, "REFERENCES.bib")
+} else {
+    ### hope for the best
+    bibfile <- file.path("..", "inst", "REFERENCES.bib")
+}
+
 ## ----tram-sessionInfo, echo = FALSE, results = "hide"--------------------
 sessionInfo()
 

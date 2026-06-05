@@ -5,6 +5,8 @@
 ###	by Torsten Hothorn
 ###
 
+(0) Choose between bivariate (2d) and multivariate (Jd) setup
+
 (1) Adjust number of cores in setup.R
 
 (2) Run ``make -f simMakefile all''

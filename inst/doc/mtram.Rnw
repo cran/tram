@@ -2138,7 +2138,18 @@ sd <- sqrt(diag(vcov(m)))
 exp(coef(m) + c(-1, 0, 1) * qnorm(.975) * sd)
 @
 
-\bibliography{\Sexpr{gsub("\\.bib", "", system.file("REFERENCES.bib", package = "tram"))},packages}
+<<bib, echo = FALSE>>=
+thisdir <- getwd()
+bibfile <- system.file("REFERENCES.bib", package = "tram")
+### bibfile may contain spaces LaTeX is unable to deal with on MacOS it seems
+if (file.copy(bibfile, to = thisdir, overwrite = TRUE)) {
+    bibfile <- file.path(thisdir, "REFERENCES.bib")
+} else {
+    ### hope for the best
+    bibfile <- file.path("..", "inst", "REFERENCES.bib")
+}
+@
+\bibliography{\Sexpr{bibfile},packages}
 
 \newpage
 
