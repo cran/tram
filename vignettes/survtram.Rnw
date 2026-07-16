@@ -5,7 +5,6 @@
 
 \documentclass[article,nojss,shortnames]{jss}
 
-
 \usepackage[]{graphicx}
 \usepackage[]{xcolor}
 % maxwidth is the original width if it is less than linewidth
@@ -57,7 +56,6 @@ if (file.copy(bibfile, to = thisdir, overwrite = TRUE)) {
 \usepackage[title]{appendix}
 
 %% line numbers
-\usepackage{lineno}
 %\internallinenumbers
 %\setrunninglinenumbers
 %\runninglinenumbers
@@ -577,7 +575,7 @@ Sandra Siegfried, B\'alint Tam\'asi, and Torsten Hothorn\\
 Institut f\"ur Epidemiologie, Biostatistik und Pr\"avention \\
 Universit\"at Z\"urich \\
 Hirschengraben 84, CH-8001 Z\"urich, Switzerland \\
-\texttt{Sandra.Siegfried@alumni.uzh.ch}, \texttt{Torsten.Hothorn@uzh.ch} \\
+\texttt{Siegfried.Sandra@protonmail.ch}, \texttt{Torsten.Hothorn@uzh.ch} \\
 }
  
 \Abstract{
@@ -609,7 +607,8 @@ few related packages.
 \footnote{Please cite this work as:
 Sandra Siegfried, B{\'a}lint Tam{\'a}si and Torsten Hothorn (2026), 
 Smooth Transformation Models for Survival Analysis: A Tutorial Using
-\proglang{R}, \emph{Statistical Methods in Medical Research}.}
+\proglang{R}, \emph{Statistical Methods in Medical Research}, 35(5), 980--997
+\url{https://doi.org/10.1177/09622802251414595}.}
 
 <<survtram-pkgs, echo = FALSE, results = "hide", message = FALSE, warning = FALSE>>=
 # required packages
@@ -1054,7 +1053,7 @@ implementations (in total 13~established CRAN packages) and corresponding result
 implementation in \pkg{tram} and \pkg{tramME} but also led to the identification of
 problematic special cases and, in some instances, practically relevant
 discrepancies between different package implementations of the very same model. 
-Moreover, Supplementary Material~\ref{sec:supp} presents the different user interfaces
+Moreover, Supplementary Material~\ref{sec:supp} presents the different user-interfaces
 of the different packages side-by-side, such that it becomes simpler to
 estimate and compare relatively complex models across independent
 implementations.  For the analysis of future survival trials, an assessment
@@ -1546,7 +1545,7 @@ specifying the transformation function $\h(\ry) = \bern{6}(\ry)^\top\parm$.
 The fully parametric approach enables the
 straightforward incorporation of interval-censored disease-free survival times. 
 Figure~\ref{fig:COX} illustrates the estimated log-cumulative baseline hazard
-function $\hatHaznul(\ry) = \hat{\h}(\ry) =
+function $\log(\hatHaznul(\ry)) = \hat{\h}(\ry) =
 \bern{6}(\ry)^\top\hat{\parm}$ along with the $95\%$-confidence band,
 revealing a non-linear function of log-time. The band was
 obtained from simultaneous confidence intervals for a dense grid of time
@@ -1917,7 +1916,7 @@ of overall survival $\rY$ and loss of follow-up $\rC$ given the treatment assign
 Up to this point, the models we have discussed have been built upon the
 assumption of independent observations.  However, this
 assumption may not hold in situations where observations are clustered, such
-as for multi-center trials where observations from the same center are
+as for multi-center trials where observations from the same center are generally
 correlated.
 
 \subsubsection{Mixed-effects proportional hazards model} \label{sec:COXME}
@@ -2557,7 +2556,7 @@ patients, as a fully parametric version of the semi-parametric cure mixture
 model proposed by \citet{Xie_Huang_Li_2022}.
 In the context of covariate adjustment, extending
 the implementation to collapsible models similar to \citet{Crowther_Royston_Clements_2022} could be explored. 
-Additionally, alternative strategies such as the marginalising the hazard ratio, as
+Additionally, alternative strategies such as marginalising the hazard ratio, as
 suggested by \citet{Rhian_2021}, could also be explored further.
 
 
@@ -2646,7 +2645,7 @@ R> icenReg::ic_par(iDFS ~ randarm, data = CAOsurv, dist = "weibull",
 
 \begin{center}
 % latex table generated in R 4.5.2 by xtable 1.8-4 package
-% Sun Nov 23 16:22:26 2025
+% Mon Feb 16 17:23:15 2026
 \scalebox{0.8}{
 \begin{tabular}{lllrrr}
   \toprule
@@ -2693,7 +2692,7 @@ R> icenReg::ic_sp(iDFS ~ randarm, data = CAOsurv, model = "ph")
 
 \begin{center}
 % latex table generated in R 4.5.2 by xtable 1.8-4 package
-% Sun Nov 23 16:22:26 2025
+% Mon Feb 16 17:23:40 2026
 \scalebox{0.8}{
 \begin{tabular}{lllrrr}
   \toprule
@@ -2746,7 +2745,7 @@ R> rms::cph(DFS ~ randarm, data = CAOsurv)
 
 \begin{center}
 % latex table generated in R 4.5.2 by xtable 1.8-4 package
-% Sun Nov 23 16:22:26 2025
+% Mon Feb 16 17:23:41 2026
 \scalebox{0.8}{
 \begin{tabular}{lllrrr}
   \toprule
@@ -2785,7 +2784,7 @@ R> rstpm2::stpm2(Surv(time = iDFStime, time2 = iDFStime2,
 
 \begin{center}
 % latex table generated in R 4.5.2 by xtable 1.8-4 package
-% Sun Nov 23 16:22:27 2025
+% Mon Feb 16 17:23:46 2026
 \scalebox{0.8}{
 \begin{tabular}{lllrrr}
   \toprule
@@ -2816,7 +2815,7 @@ R> rms::cph(DFS ~ randarm + strat(strat), data = CAOsurv)
 
 \begin{center}
 % latex table generated in R 4.5.2 by xtable 1.8-4 package
-% Sun Nov 23 16:22:27 2025
+% Mon Feb 16 17:23:53 2026
 \scalebox{0.8}{
 \begin{tabular}{lllrrr}
   \toprule
@@ -2858,7 +2857,7 @@ R> survival::survreg(DFS ~ randarm + strata(strat), data = CAOsurv)
 
 \begin{center}
 % latex table generated in R 4.5.2 by xtable 1.8-4 package
-% Sun Nov 23 16:22:27 2025
+% Mon Feb 16 17:23:54 2026
 \scalebox{0.8}{
 \begin{tabular}{lllrrr}
   \toprule
@@ -2908,7 +2907,7 @@ location parameter below.
 %
 \begin{center}
 % latex table generated in R 4.5.2 by xtable 1.8-4 package
-% Sun Nov 23 16:22:28 2025
+% Mon Feb 16 17:24:12 2026
 \scalebox{0.8}{
 \begin{tabular}{llrrr}
   \toprule
@@ -2943,7 +2942,7 @@ Again, we only show the estimates and standard errors of the location parameter 
 %
 \begin{center}
 % latex table generated in R 4.5.2 by xtable 1.8-4 package
-% Sun Nov 23 16:22:28 2025
+% Mon Feb 16 17:24:12 2026
 \scalebox{0.8}{
 \begin{tabular}{llrrr}
   \toprule
@@ -3048,7 +3047,7 @@ R> coxme::coxme(DFS ~ randarm + (1 | Block), data = CAOsurv)
 
 \begin{center}
 % latex table generated in R 4.5.2 by xtable 1.8-4 package
-% Sun Nov 23 16:22:47 2025
+% Mon Feb 16 17:24:28 2026
 \scalebox{0.8}{
 \begin{tabular}{lllrrr}
   \toprule
@@ -3128,7 +3127,7 @@ R> frailtypack::frailtyPenal(DFS ~ randarm + cluster(id),
 
 \begin{center}
 % latex table generated in R 4.5.2 by xtable 1.8-4 package
-% Sun Nov 23 16:23:20 2025
+% Mon Feb 16 17:24:47 2026
 \scalebox{0.8}{
 \begin{tabular}{lllrrr}
   \toprule
@@ -3171,7 +3170,7 @@ R> timereg::Gprop.odds(DFS ~ prop(randarm), data = CAOsurv)
 
 \begin{center}
 % latex table generated in R 4.5.2 by xtable 1.8-4 package
-% Sun Nov 23 16:24:37 2025
+% Mon Feb 16 17:25:14 2026
 \scalebox{0.8}{
 \begin{tabular}{lllrrr}
   \toprule
@@ -3195,62 +3194,63 @@ the \pkg{timereg} package and thus do not report it here.
 
 \subsection*{Computational details}
 \begin{itemize}\raggedright
-  \item R version 4.5.2 (2025-10-31), \verb|x86_64-pc-linux-gnu|
-  \item Running under: \verb|Ubuntu 24.04.3 LTS|
+  \item \proglang{R} version 4.5.2 (2025-10-31), \verb|x86_64-pc-linux-gnu|
+  \item Running under: \verb|Ubuntu 24.04.4 LTS|
   \item Matrix products: default
   \item BLAS:   \verb|/usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3|
   \item LAPACK: \verb|/usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so|
 ; \quad\ LAPACK version3.12.0
-  \item Base packages: base, datasets, graphics, grDevices, grid,
-    methods, parallel, splines, stats, utils
-  \item Other packages: ATR~0.1-1, basefun~1.2-5,
+  \item Base packages: \code{base, datasets, graphics, grDevices, grid,
+    methods, parallel, splines, stats, utils}
+  \item Other packages: \code{ATR~0.1-1, basefun~1.2-5,
     bdsmatrix~1.3-7, boot~1.3-32, coda~0.19-4.1, coin~1.4-3,
-    colorspace~2.1-2, coxme~2.2-22, doBy~4.7.0, eha~2.11.5,
+    colorspace~2.1-2, coxme~2.2-22, doBy~4.7.1, eha~2.11.5,
     fastGHQuad~1.0.1, flexsurv~2.3.2, frailtyEM~1.0.1,
-    frailtypack~3.7.1, gamlss~5.5-0, gamlss.cens~5.0-7,
+    frailtypack~3.8.0, gamlss~5.5-0, gamlss.cens~5.0-7,
     gamlss.data~6.0-7, gamlss.dist~6.1-1, Hmisc~5.2-4,
-    icenReg~2.0.16, ICsurv~1.0.1, knitr~1.50, libcoin~1.0-10,
-    MASS~7.3-65, mgcv~1.9-4, mlt~1.7-2, mpr~1.0.6,
+    icenReg~2.0.16, ICsurv~1.0.1, knitr~1.51, libcoin~1.0-10,
+    MASS~7.3-65, mgcv~1.9-4, mlt~1.7-3, mpr~1.0.6,
     multcomp~1.4-29, mvtnorm~1.3-3, nlme~3.1-168,
-    optimx~2025-4.9, parfm~2.7.8, partykit~1.2-24, Rcpp~1.1.0,
+    optimx~2025-4.9, parfm~2.7.8, partykit~1.2-25, Rcpp~1.1.1,
     rms~8.1-0, rstpm2~1.7.1, SparseGrid~0.8.2, survC1~1.0-3,
-    survival~3.8-3, TH.data~1.1-5, timereg~2.0.7, tram~1.3-0,
+    survival~3.8-6, TH.data~1.1-5, timereg~2.0.7, tram~1.3-2,
     tramME~1.0.8, TransModel~2.3, trtf~0.4-3, variables~1.1-2,
-    xtable~1.8-4
+    xtable~1.8-4}
   \item Loaded via a namespace (and not attached):
-    alabama~2023.1.0, assertthat~0.2.1, backports~1.5.0,
-    base64enc~0.1-3, BB~2019.10-1, bbmle~1.0.25.1, broom~1.0.10,
-    checkmate~2.3.3, cli~3.6.5, cluster~2.1.8.1,
-    codetools~0.2-20, compiler~4.5.2, coneproj~1.22,
-    cowplot~1.2.0, data.table~1.17.8, Deriv~4.2.0, deSolve~1.40,
-    digest~0.6.38, dplyr~1.1.4, evaluate~1.0.5, expint~0.1-9,
-    expm~1.0-0, farver~2.1.2, fastmap~1.2.0, foreach~1.5.2,
-    foreign~0.8-90, Formula~1.2-5, future~1.67.0,
-    future.apply~1.20.0, generics~0.1.4, ggplot2~4.0.1,
-    globals~0.18.0, glue~1.8.0, gridExtra~2.3, gtable~0.3.6,
+    \code{alabama~2025.1.0, assertthat~0.2.1, backports~1.5.0,
+    base64enc~0.1-6, BB~2019.10-1, bbmle~1.0.25.1, broom~1.0.12,
+    checkmate~2.3.4, cli~3.6.5, cluster~2.1.8.2,
+    codetools~0.2-20, compiler~4.5.2, coneproj~1.23,
+    cowplot~1.2.0, data.table~1.17.8, Deriv~4.2.0, deSolve~1.41,
+    digest~0.6.39, doParallel~1.0.17, dplyr~1.1.4,
+    evaluate~1.0.5, expint~0.2-1, expm~1.0-0, farver~2.1.2,
+    fastmap~1.2.0, foreach~1.5.2, forecast~9.0.1, foreign~0.8-90,
+    Formula~1.2-5, fracdiff~1.5-3, future~1.67.0,
+    future.apply~1.20.0, generics~0.1.4, ggplot2~4.0.2,
+    globals~0.19.0, glue~1.8.0, gridExtra~2.3, gtable~0.3.6,
     htmlTable~2.4.3, htmltools~0.5.8.1, htmlwidgets~1.6.4,
-    inum~1.0-5, iterators~1.0.14, lattice~0.22-7, lava~1.8.2,
-    lifecycle~1.0.4, listenv~0.10.0, magrittr~2.0.4,
-    Matrix~1.7-4, matrixcalc~1.0-6, MatrixModels~0.5-4,
-    matrixStats~1.5.0, microbenchmark~1.5.0, mnormt~2.1.1,
-    modelr~0.1.11, modeltools~0.2-24, msm~1.8.2, mstate~0.3.3,
-    muhaz~1.2.6.4, nloptr~2.2.1, nnet~7.3-20,
-    numDeriv~2016.8-1.1, orthopolynom~1.0-6.1, parallelly~1.45.1,
-    pillar~1.11.1, pkgconfig~2.0.3, polspline~1.1.25,
-    polynom~1.4-1, pracma~2.4.6, purrr~1.2.0, quadprog~1.5-8,
-    quantreg~6.1, R6~2.6.1, rbibutils~2.4, RColorBrewer~1.1-3,
-    Rdpack~2.6.4, reformulas~0.4.2, rlang~1.1.6, rmarkdown~2.30,
-    rootSolve~1.8.2.4, rpart~4.1.24, rstudioapi~0.17.1, S7~0.2.1,
-    sandwich~3.1-1, scales~1.4.0, sn~2.1.1, SparseM~1.84-2,
-    statmod~1.5.1, stats4~4.5.2, stringi~1.8.7, stringr~1.6.0,
-    tibble~3.3.0, tidyr~1.3.1, tidyselect~1.2.1, TMB~1.9.18,
-    tools~4.5.2, vctrs~0.6.5, withr~3.0.2, xfun~0.54, zoo~1.8-14
+    inum~1.0-5, iterators~1.0.14, lattice~0.22-9, lava~1.8.2,
+    lifecycle~1.0.5, listenv~0.10.0, magrittr~2.0.4,
+    marqLevAlg~2.0.8, Matrix~1.7-4, matrixcalc~1.0-6,
+    MatrixModels~0.5-4, matrixStats~1.5.0, microbenchmark~1.5.0,
+    mnormt~2.1.2, modelr~0.1.11, modeltools~0.2-24, msm~1.8.2,
+    mstate~0.3.3, muhaz~1.2.6.4, nloptr~2.2.1, nnet~7.3-20,
+    numDeriv~2016.8-1.1, orthopolynom~1.0-6.1, otel~0.2.0,
+    parallelly~1.46.1, pillar~1.11.1, pkgconfig~2.0.3,
+    polspline~1.1.25, polynom~1.4-1, pracma~2.4.6, purrr~1.2.1,
+    quadprog~1.5-8, quantreg~6.1, R6~2.6.1, rbibutils~2.4.1,
+    RColorBrewer~1.1-3, Rdpack~2.6.6, reformulas~0.4.4,
+    rlang~1.1.7, rmarkdown~2.30, rootSolve~1.8.2.4, rpart~4.1.24,
+    rstudioapi~0.17.1, S7~0.2.1, sandwich~3.1-1, scales~1.4.0,
+    sn~2.1.2, SparseM~1.84-2, statmod~1.5.1, stats4~4.5.2,
+    stringi~1.8.7, stringr~1.6.0, tibble~3.3.1, tidyr~1.3.2,
+    tidyselect~1.2.1, timeDate~4052.112, TMB~1.9.19, tools~4.5.2,
+    urca~1.3-4, vctrs~0.7.1, withr~3.0.2, xfun~0.56, zoo~1.8-15}
 \end{itemize}
 
 
 \putbib
 \end{bibunit}
 \end{appendices}
-
 
 \end{document}

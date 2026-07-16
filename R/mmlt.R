@@ -188,10 +188,12 @@ perm_test.mmlt <- function(object, parm, nullvalue = 0,
     stopifnot(length(parm) == 1L)
     cf <- coef(object)
     stopifnot(parm %in% names(cf))
-    mn <- strsplit(parm, "\\.")[[c(1L, 1L)]]
-    ### would need X for lambda parameters as well
-    stopifnot(mn %in% object$model$names)
-    vn <- strsplit(parm, "\\.")[[c(1L, 2L)]]
+
+    ### determine name of response and name of parameter
+    mn <- sapply(object$models$names, function(n)
+                 length(grep(paste0("^", n), parm)) > 0)
+    mn <- object$models$names[mn]
+    vn <- gsub(paste0(mn, "."), "", parm)
     fx <- object$fixed
 
     ### selecting the data corresponding to parm is a bit messy

@@ -2,6 +2,13 @@
 \name{NEWS}
 \title{NEWS file for the tram package}
 
+\section{Changes in Version 1.4-4 (2026-07-10)}{
+  \itemize{
+    \item{More robust handling of variable names in \code{perm_test.mmlt}.}
+    \item{Update \code{structure} calls.}
+  }
+}
+
 \section{Changes in Version 1.4-3 (2026-06-05)}{
   \itemize{
     \item{Update \code{inst} subdir.}

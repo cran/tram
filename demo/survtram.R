@@ -1,6 +1,8 @@
 ### Code from
 ### "Smooth Transformation Models for Survival Analysis: A Tutorial Using R"
-###   by Sandra Siegfried, Balint Tamasi & Torsten Hothorn
+###   by Sandra Siegfried, Balint Tamasi & Torsten Hothorn (2026)
+###   Statistical Methods in Medical Research, 35(5), 980-997
+###   URL: https://doi.org/10.1177/09622802251414595
 
 library("tram")
 
@@ -22,12 +24,9 @@ if (length(ix) > 0) {
    sapply(pkgs[ix], require, char = TRUE)
 }
 
-
 ## ----pkgs-setup---------------------------------------------------------------
 `coef<-` <- mlt::`coef<-` ## masked by pkg rstpm2
 Surv <- survival::Surv ## masked by eha
-
-
 
 ## ----result-summary, include = FALSE------------------------------------------
 frmtcall <- function(mod, call = NA, tex = TRUE) {
@@ -129,8 +128,6 @@ print.results <- function(objects) {
 }
 
 
-
-
 ## ----WEI-iDFS-fit, cache = TRUE-----------------------------------------------
 mwi1 <- tram::Survreg(iDFS ~ randarm, data = CAOsurv, dist = "weibull")
 mwi2 <- icenReg::ic_par(iDFS ~ randarm, data = CAOsurv, dist = "weibull",
@@ -168,8 +165,6 @@ mci4 <- icenReg::ic_sp(iDFS ~ randarm, data = CAOsurv, model = "ph")
 print.results(list(mci1, mci2, mci3, mci4))
 
 
-
-
 ## ----Cox-DFS-fit, echo = FALSE, cache = TRUE----------------------------------
 mc1 <- tram::Coxph(DFS ~ randarm, data = CAOsurv)
 mc2 <- survival::coxph(DFS ~ randarm, data = CAOsurv)
@@ -178,13 +173,6 @@ mc3 <- rms::cph(DFS ~ randarm, data = CAOsurv)
 
 ## ----Cox-DFS-results, eval = TRUE---------------------------------------------
 print.results(list(mc1, mc2, mc3))
-
-
-
-
-
-
-
 
 ## ----STRAT-iDFS-fit, cache = TRUE---------------------------------------------
 mstci1 <- tram::Coxph(iDFS | strat ~ randarm, data = CAOsurv)
@@ -197,34 +185,24 @@ mstci2 <- rstpm2::stpm2(Surv(time = iDFStime, time2 = iDFStime2, event = iDFSeve
 ##          however, the hessian is singular, so we exclude this model
 ##          for the time being.
 
-
 ## ----STRAT-iDFS-results-------------------------------------------------------
 print.results(list(mstci1, mstci2))##, mstci3))
-
-
 
 ## ----STRAT-DFS-fit, cache = TRUE----------------------------------------------
 mstc1 <- tram::Coxph(DFS | strat ~ randarm, data = CAOsurv)
 mstc2 <- survival::coxph(DFS ~ randarm + strata(strat), data = CAOsurv)
 mstc3 <- rms::cph(DFS ~ randarm + strat(strat), data = CAOsurv)
 
-
 ## ----STRAT-DFS-results--------------------------------------------------------
 print.results(list(mstc1, mstc2, mstc3))
-
-
 
 ## ----STRAT-Wei-iDFS-fit, echo = FALSE, cache = TRUE---------------------------
 mstw1 <- tram::Survreg(DFS | strat ~ randarm, data = CAOsurv)
 mstw2 <- eha::phreg(DFS ~ randarm + strata(strat), data = CAOsurv)
 mstw3 <- survival::survreg(DFS ~ randarm + strata(strat), data = CAOsurv)
 
-
 ## ----STRAT-Wei-iDFS-results---------------------------------------------------
 print.results(list(mstw1, mstw2, mstw3))
-
-
-
 
 ## ----LS-iDFS-Wei-fit, cache = TRUE--------------------------------------------
 mswi1 <- tram::Survreg(iDFS ~ randarm | randarm, data = CAOsurv,
@@ -235,33 +213,21 @@ mswi2 <- gamlss::gamlss(formula = iDFS ~ randarm, sigma.fo = ~ randarm,
   family = gamlss.cens::cens(family = "WEI2", type = "interval"),
   data = tmp, control = gamlss.control(n.cyc = 300, trace = FALSE))
 
-
-
 ## ----LS-iDFS-results----------------------------------------------------------
 print.results(list(mswi1, mswi2))
-
-
-
 
 ## ----LS-DFS-fit, echo = FALSE, cache = TRUE-----------------------------------
 msw1 <- tram::Survreg(DFS ~ randarm | randarm, data = CAOsurv,
   remove_intercept = FALSE)
 msw2 <- mpr::mpr(DFS ~ list(~ randarm, ~ randarm), data = CAOsurv)
 
-
-
 ## ----LS-DFS-results-----------------------------------------------------------
 print.results(list(msw1, msw2))
-
-
-
 
 ## ----TVAR-iDFS-fit, cache = TRUE----------------------------------------------
 mcvi1 <- tram::Coxph(iDFS | randarm ~ 1, data = CAOsurv)
 mcvi2 <- flexsurv::flexsurvspline(iDFS ~ randarm +
     gamma1(randarm) + gamma2(randarm), data = CAOsurv, k = 3)
-
-
 
 ## ----TVAR-iDFS-plot, fig.width = 6, fig.height = 3----------------------------
 ## cumHR from "tram"
@@ -290,13 +256,10 @@ legend("topright", lty = 1:2, lwd = 2, col = c("black", col2),
   legend = c(bquote("package:"~bold("tram")), bquote("package:"~bold("flexsurv"))),
   bty = "n")
 
-
-
 ## ----TVAR-DFS-fit, cache = TRUE-----------------------------------------------
 mcv1 <- tram::Coxph(DFS | randarm ~ 1, data = CAOsurv)
 mcv2 <- flexsurv::flexsurvspline(DFS ~ randarm + gamma1(randarm) + gamma2(randarm),
   data = CAOsurv, k = 3)
-
 
 ## ----TVAR-DFS-plot, fig.width = 6, fig.height = 3-----------------------------
 ## cumHR from "tram"
@@ -325,20 +288,14 @@ legend("topright", lty = 1:2, lwd = 2, col = c("black", col2),
   legend = c(bquote("package:"~bold("tram")), bquote("package:"~bold("flexsurv"))),
   bty = "n")
 
-
-
 ## ----MIXED-DFS-fit, cache = TRUE----------------------------------------------
 mcME1 <- tramME::CoxphME(DFS ~ randarm + (1 | Block), data = CAOsurv)
 mcME2 <- rstpm2::stpm2(Surv(DFStime, DFSevent) ~ randarm, data = CAOsurv,
   cluster = "Block", RandDist = "LogN")
 mcME3 <- coxme::coxme(DFS ~ randarm + (1 | Block), data = CAOsurv)
 
-
 ## ----MIXED-DFS-results--------------------------------------------------------
 print.results(list(mcME1, mcME2, mcME3))
-
-
-
 
 ## ----HTECOX-DFS-fit-----------------------------------------------------------
 ma1 <- CoxphME(DFS ~ randarm +
@@ -348,10 +305,8 @@ ma2 <- gam(DFStime ~ randarm +
     s(age, by = as.ordered(randarm), fx = TRUE, k = 6),
                data = CAOsurv, family = cox.ph(), weights = DFSevent)
 
-
 ## ----HTECOX-DFS-results-------------------------------------------------------
 print.results(list(ma1, ma2))
-
 
 ## ----HTECOX-DFS-plot----------------------------------------------------------
 nd <- model.frame(ma1)[rep(2, 100), ]
@@ -382,8 +337,6 @@ legend("bottomright", lty = 1:2, lwd = 2, col = c("black", col2),
   legend = c(bquote("package:"~bold("tramME")), bquote("package:"~bold("mgcv"))),
   bty = "n")
 
-
-
 ## ----FRAILTY-DFS-fit, cache = TRUE--------------------------------------------
 mfc1 <- tram::Coxph(DFS ~ randarm, data = CAOsurv, frailty = "Gamma")
 mfc2 <- rstpm2::stpm2(Surv(DFStime, DFSevent) ~ randarm, data = CAOsurv,
@@ -393,12 +346,8 @@ mfc4 <- frailtyEM::emfrail(DFS ~ randarm + cluster(id), data = CAOsurv)
 mfc5 <- frailtypack::frailtyPenal(DFS ~ randarm + cluster(id), data = CAOsurv,
   RandDist = "Gamma", n.knots = 10, kappa = 1)
 
-
 ## ----FRAILTY-DFS-results------------------------------------------------------
 print.results(list(mfc1, mfc2, mfc3, mfc4, mfc5))
-
-
-
 
 ## ----Colr-DFS-fit, cache = TRUE-----------------------------------------------
 mo1 <- tram::Colr(DFS ~ randarm, data = CAOsurv)
@@ -406,10 +355,8 @@ mo2 <- rstpm2::stpm2(Surv(DFStime, DFSevent) ~ randarm, data = CAOsurv, link.typ
 mo3 <- flexsurv::flexsurvspline(iDFS ~ randarm, data = CAOsurv, k = 3, scale = "odds")
 mo4 <- timereg::Gprop.odds(DFS ~ prop(randarm), data = CAOsurv)
 
-
 ## ----Colr-DFS-results---------------------------------------------------------
 print.results(list(mo1, mo2, mo3, mo4))
-
 
 ## ----session, results = "asis"------------------------------------------------
 sessionInfo()
