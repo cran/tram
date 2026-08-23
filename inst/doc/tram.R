@@ -31,7 +31,7 @@ col <- diverge_hcl(2, h = c(246, 40), c = 96, l = c(65, 90))
 fill <- diverge_hcl(2, h = c(246, 40), c = 96, l = c(65, 90), alpha = .3)
 
 ## ----tram-citation, echo = FALSE-----------------------------------------
-year <- substr(packageDescription("tram")$Date, 1, 4)
+year <- format(dt <- as.Date(packageDescription("tram")$Packaged), "%Y")
 version <- packageDescription("tram")$Version
 
 ## ----fail, results = "asis", echo = FALSE--------------------------------

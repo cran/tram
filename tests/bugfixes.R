@@ -286,3 +286,13 @@ mx <- Lm(x ~ 1, data = d)
 my <- Polr(y ~ w, data = d)
 m <- mmlt(mx, my, data = d, family = ~ 1)
 pt <- perm_test(m, parm = "y.w2", confint = FALSE)
+
+### summary didn't work with fixed parameters, spotted by Lukas Graz
+d <- data.frame(y = rnorm(100), z = rnorm(100), x1 = runif(100), x2 = runif(100))
+m1 <- BoxCox(y ~ x1 + x2, data = d, fixed = c("x2" = 0))
+m2 <- BoxCox(z ~ x2, data = d)
+summary(m1)	### failed
+
+m <- Mmlt(m1, m2, data = d)
+summary(m)	### failed
+

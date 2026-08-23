@@ -2,6 +2,16 @@
 \name{NEWS}
 \title{NEWS file for the tram package}
 
+\section{Changes in Version 1.4-5 (2026-08-21)}{
+  \itemize{
+    \item{\code{summary} now also works with fixed model parameters, spotted by Lukas Graz.}
+    \item{Illustrations using the \code{PimaIndiansDiabetes} data from
+      \pkg{mlbench} have been adapted to use the \pkg{SynthDiabetes} data instead
+      because the former data are not shared in \pkg{mlbench} and the UCI Machine
+      Learning Repository anymore.}
+  }
+}
+
 \section{Changes in Version 1.4-4 (2026-07-10)}{
   \itemize{
     \item{More robust handling of variable names in \code{perm_test.mmlt}.}

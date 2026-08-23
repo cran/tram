@@ -93,7 +93,10 @@ summary.Mmlt <- function(object, ...) {
     ret <- list(call = object$call,
                 #                tram = object$tram,
                 test = cftest(object, 
-                              parm = names(coef(object, with_baseline = FALSE))),
+                              parm = names(coef(object, with_baseline = FALSE, 
+                                                fixed = FALSE)),
+                              coef. = function(...) coef(..., fixed = FALSE)
+                       ),
                 ll = logLik(object))
     class(ret) <- "summary.Mmlt"
     ret

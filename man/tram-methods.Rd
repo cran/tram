@@ -64,18 +64,23 @@
      confidence = c("none", "interval", "band"), level = 0.95, 
      K = 50, cheat = K, col = "black", fill = "lightgrey", lwd = 1, ...)
 \method{residuals}{tram}(object, ...)
+PI(object, \dots)
 \method{PI}{tram}(object, newdata = model.frame(object), reference = 0,
                   one2one = FALSE, \dots)
 \method{PI}{default}(object, prob, link = "logistic", ...)
+OVL(object, \dots)
 \method{OVL}{tram}(object, newdata = model.frame(object), reference = 0,
                   one2one = FALSE, \dots)
 \method{OVL}{default}(object, link = "logistic", ...)
+TV(object, \dots)
 \method{TV}{tram}(object, newdata = model.frame(object), reference = 0,
                   one2one = FALSE, \dots)
 \method{TV}{default}(object, link = "logistic", ...)
+L1(object, \dots)
 \method{L1}{tram}(object, newdata = model.frame(object), reference = 0,
                   one2one = FALSE, \dots)
 \method{L1}{default}(object, link = "logistic", ...)
+ROC(object, \dots)
 \method{ROC}{tram}(object, newdata = model.frame(object), reference = 0,
                    prob = 1:99 / 100, one2one = FALSE, \dots)
 \method{ROC}{default}(object, prob = 1:99 / 100, link = "logistic", ...)
@@ -252,13 +257,14 @@
     if (require("mlbench") && .Platform$OS.type != "windows") {
 
         layout(matrix(1:4, nrow = 2))
-        data("PimaIndiansDiabetes2", package = "mlbench")
-        dia <- sort(unique(PimaIndiansDiabetes2$diabetes))
+        ### synthetic data
+        data("SynthDiabetes2", package = "mlbench")
+        dia <- sort(unique(SynthDiabetes2$diabetes))
         nd <- data.frame(diabetes = dia, 
                          age = 29, mass = 32) ### median values
 
         ### unconditional ROC analysis: glucose tolerance test
-        m0 <- Colr(glucose ~ diabetes, data = PimaIndiansDiabetes2)
+        m0 <- Colr(glucose ~ diabetes, data = SynthDiabetes2)
         # ROC curve + confidence band
         plot(ROC(m0, newdata = nd[2,,drop = FALSE], conf.level = .95)) 
         # Wald interval for AUC
@@ -267,7 +273,7 @@
         PI(-c(coef(m0), score_test(m0)$conf.int[2:1]))
 
         ### adjusted ROC analysis for age and mass
-        m1 <- Colr(glucose ~ diabetes + age + mass, data = PimaIndiansDiabetes2)
+        m1 <- Colr(glucose ~ diabetes + age + mass, data = SynthDiabetes2)
         # ROC curve + confidence band (this is the same for all ages /
         # masses)
         plot(ROC(m1, newdata = nd[2,,drop = FALSE], 
@@ -280,7 +286,7 @@
         PI(-c(coef(m1)[1], score_test(m1, names(coef(m1))[1])$conf.int[2:1]))
 
         ### conditional ROC analysis: AUC regression ~ age + mass
-        m2 <- Colr(glucose ~ diabetes * (age + mass), data = PimaIndiansDiabetes2)
+        m2 <- Colr(glucose ~ diabetes * (age + mass), data = SynthDiabetes2)
         # ROC curve for a person with age = 29 and mass = 32
         plot(ROC(m2, newdata = nd[2,,drop = FALSE], 
                      reference = nd[1,,drop = FALSE], 

@@ -6,7 +6,7 @@ pkgs <- c("colorspace", "survival", "lme4", "tram", "gridExtra",
 pkgs <- sapply(pkgs, require, character.only = TRUE)
 
 ## ----mtram-citation, echo = FALSE----------------------------------------
-year <- substr(packageDescription("tram")$Date, 1, 4)
+year <- format(dt <- as.Date(packageDescription("tram")$Packaged), "%Y")
 version <- packageDescription("tram")$Version
 
 ## ----fail, results = "asis", echo = FALSE--------------------------------

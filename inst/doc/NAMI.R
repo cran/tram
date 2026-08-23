@@ -3,7 +3,7 @@ pkgs <- c("tram", "TH.data", "multcomp", "survival", "Stat2Data", "tramME")
 pkgs <- sapply(pkgs, require, character.only = TRUE)
 
 ## ----nami-citation, echo = FALSE----------------------------------------------
-year <- substr(packageDescription("tram")$Date, 1, 4)
+year <- format(dt <- as.Date(packageDescription("tram")$Packaged), "%Y")
 version <- packageDescription("tram")$Version
 
 ## ----fail, results = "asis", echo = FALSE-------------------------------------

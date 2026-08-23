@@ -107,7 +107,7 @@ censoring, truncation}
 \begin{document}
 
 <<tram-citation, echo = FALSE>>=
-year <- substr(packageDescription("tram")$Date, 1, 4)
+year <- format(dt <- as.Date(packageDescription("tram")$Packaged), "%Y")
 version <- packageDescription("tram")$Version
 @
 \footnote{Please cite this document as: Torsten Hothorn (\Sexpr{year})

@@ -219,9 +219,10 @@ summary.tram <- function(object, ...) {
                 tram = object$tram,
                 test = NULL,
                 ll = logLik(object))
-    cf <- coef(object, with_baseline = FALSE)
+    cf <- coef(object, with_baseline = FALSE, fixed = FALSE)
     if (!is.null(cf))
-        ret$test <- cftest(object, parm = names(cf))
+        ret$test <- cftest(object, parm = names(cf), 
+                           coef. = function(...) coef(..., fixed = FALSE))
     if (!is.null(object$LRtest)) {
         ret$LRstat <- object$LRtest["LRstat"]
         ret$df <- floor(object$LRtest["df"])
