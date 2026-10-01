@@ -47,7 +47,9 @@ sleepstudy$Reaction_I[1:5]
 
 
 ## ----mtram-sleep-interval, cache = FALSE--------------------------------------
-sleep_LM_I <- Lm(Reaction_I ~ Days, data = sleepstudy)
+### use BoxCox(..., order = 1) instead of Lm() b/c we get better starting
+### values
+sleep_LM_I <- BoxCox(Reaction_I ~ Days, data = sleepstudy, order = 1)
 sleep_LMmer_I <- mtram(sleep_LM_I, ~ (Days | Subject), data = sleepstudy)
 
 

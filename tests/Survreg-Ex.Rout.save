@@ -1,6 +1,6 @@
 
-R version 4.5.2 (2025-10-31) -- "[Not] Part in a Rumble"
-Copyright (C) 2025 The R Foundation for Statistical Computing
+R version 4.6.1 (2026-06-24) -- "Happy Hop"
+Copyright (C) 2026 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -545,4 +545,4 @@ Likelihood-ratio Test: Chisq = 64.5 on 2 degrees of freedom; p = 9.75e-15
 > 
 > proc.time()
    user  system elapsed 
-  1.231   0.063   1.288 
+  2.508   0.053   1.476 

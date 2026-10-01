@@ -22,7 +22,7 @@ coef(as.mlt(m1))
 sqrt(diag(vcov(m1)))
 
 m2 <- Survreg(y ~ xx | xx, data = d, remove_intercept = FALSE)
-coef(as.mlt(m2))
+round(coef(as.mlt(m2)), 1) ### BLIS reported a small diff
 sqrt(diag(vcov(m2)))
 
 

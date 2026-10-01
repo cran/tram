@@ -749,9 +749,11 @@ sleepstudy$Reaction_I[1:5]
 @
 converts the outcome to interval-censored values, where each interval has
 length $40$. The above mixed model can now be estimated by maximising the
-likelihood corresponding to interval-censored observations:
+likelihood corresponding to interval-censored observations. We use
+\cmd{BoxCox} with a linear transformation function, because it is easier to
+compute reasonable starting values:
 <<mtram-sleep-interval, cache = FALSE>>=
-sleep_LM_I <- Lm(Reaction_I ~ Days, data = sleepstudy)
+sleep_LM_I <- BoxCox(Reaction_I ~ Days, data = sleepstudy, order = 1)
 sleep_LMmer_I <- mtram(sleep_LM_I, ~ (Days | Subject), data = sleepstudy)
 @
 Of course, the log-likelihood changes (because this is a log-probability and

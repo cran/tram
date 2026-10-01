@@ -8,12 +8,13 @@ bibentry(bibtype="Article",
          volume       = "45",
          number       = "1",
          pages        = "110--134",
+         doi          = "10.1111/sjos.12291",
          mheader = "For theoretical issues cite:"
 )
 
 bibentry(bibtype="Article",
          title = "Most Likely Transformations: The mlt Package",
-         author = person("Torsten Hothorn"),
+         author = c(person("Torsten Hothorn")),
          journal      = "Journal of Statistical Software",
          year         = "2020",
          volume       = "92",

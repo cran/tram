@@ -2,6 +2,12 @@
 \name{NEWS}
 \title{NEWS file for the tram package}
 
+\section{Changes in Version 1.4-6 (2026-09-28)}{
+  \itemize{
+    \item{Robustify checks.}
+  }
+}
+
 \section{Changes in Version 1.4-5 (2026-08-21)}{
   \itemize{
     \item{\code{summary} now also works with fixed model parameters, spotted by Lukas Graz.}

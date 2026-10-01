@@ -21,21 +21,18 @@ ll <- logLik(house.plr)
 attr(ll, "nobs") <- NULL
 cmp(ll, logLik(house.plr2))
 
-if (require("TH.data")) {
+if (require("TH.data") && !is.null(formals(mlt::mltoptim)$TOTP)) {
 
     ### blood loss data
     load(system.file("rda", "bloodloss.rda", package = "TH.data"))
     sMBL <- sort(unique(blood$MBL))
     blood$MBLc <- cut(blood$MBL, breaks = c(-Inf, sMBL), ordered_result = TRUE)
 
-    op <- mltoptim()[c("auglag", "nlminb")]
-    m <- lapply(1:length(op), function(i) 
-        Polr(MBLc ~ 1, data = blood, method = "probit", optim = op[i])
-    )
-    stopifnot(all(diff(sapply(m, logLik)) < 1e-5))
+    op <- mltoptim(TOTP = TRUE)
+    op$spg <- op$nloptr <- NULL
+    t1 <- Polr(MBLc ~ 1, data = blood, method = "probit", optim = op)$totp
+    stopifnot(max(t1$value - t1$value[1]) < .01)
+    t2 <- Polr(MBLc ~ IOL + DAUER.ap + FET.GEW, data = blood, method = "probit", optim = op)$totp
+    stopifnot(max(t2$value - t2$value[1]) < .01)
 
-    m <- lapply(1:length(op), function(i) 
-        Polr(MBLc ~ IOL + DAUER.ap + FET.GEW, data = blood, method = "probit", optim = op[i])
-    )
-    stopifnot(all(diff(sapply(m, logLik)) < 1e-5))
 }

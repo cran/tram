@@ -1,6 +1,6 @@
 
-R version 4.5.2 (2025-10-31) -- "[Not] Part in a Rumble"
-Copyright (C) 2025 The R Foundation for Statistical Computing
+R version 4.6.1 (2026-06-24) -- "Happy Hop"
+Copyright (C) 2026 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -51,9 +51,9 @@ Loading required package: mvtnorm
         1.1         0.2         0.2 
 > 
 > m2 <- Survreg(y ~ xx | xx, data = d, remove_intercept = FALSE)
-> coef(as.mlt(m2))
+> round(coef(as.mlt(m2)), 1) ### BLIS reported a small diff
      log(y) (Intercept)          xx      scl_xx 
-       1.39        1.88       -0.10       -0.04 
+        1.4         1.9        -0.1         0.0 
 > sqrt(diag(vcov(m2)))
 (Intercept)          xx      scl_xx 
         1.1         0.2         0.2 
@@ -152,4 +152,4 @@ Bs1(y) Bs2(y)     xx scl_xx
 > 
 > proc.time()
    user  system elapsed 
-   1.14    0.06    1.20 
+    2.3     0.1     1.3 

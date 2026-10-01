@@ -1,6 +1,6 @@
 
-R version 4.5.2 (2025-10-31) -- "[Not] Part in a Rumble"
-Copyright (C) 2025 The R Foundation for Statistical Computing
+R version 4.6.1 (2026-06-24) -- "Happy Hop"
+Copyright (C) 2026 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -101,7 +101,9 @@ Days              0.081 1.000
 > 
 > 
 > ## ----mtram-sleep-interval, cache = FALSE--------------------------------------
-> sleep_LM_I <- Lm(Reaction_I ~ Days, data = sleepstudy)
+> ### use BoxCox(..., order = 1) instead of Lm() b/c we get better starting
+> ### values
+> sleep_LM_I <- BoxCox(Reaction_I ~ Days, data = sleepstudy, order = 1)
 > sleep_LMmer_I <- mtram(sleep_LM_I, ~ (Days | Subject), data = sleepstudy)
 > 
 > 
@@ -111,4 +113,4 @@ Days              0.081 1.000
 > 
 > proc.time()
    user  system elapsed 
-  2.959   0.087   3.042 
+    4.7     0.1     4.0 

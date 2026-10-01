@@ -134,7 +134,7 @@ sleepstudy$Reaction_I <- with(sleepstudy, Surv(Reaction - 20, Reaction + 20,
 sleepstudy$Reaction_I[1:5]
 
 ## ----mtram-sleep-interval, cache = FALSE---------------------------------
-sleep_LM_I <- Lm(Reaction_I ~ Days, data = sleepstudy)
+sleep_LM_I <- BoxCox(Reaction_I ~ Days, data = sleepstudy, order = 1)
 sleep_LMmer_I <- mtram(sleep_LM_I, ~ (Days | Subject), data = sleepstudy)
 
 ## ----mtram-sleep-interval-results----------------------------------------

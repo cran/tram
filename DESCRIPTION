@@ -1,6 +1,6 @@
 Package: tram
 Title: Transformation Models
-Version: 1.4-5
+Version: 1.4-6
 Authors@R: c(person("Torsten", "Hothorn", role = c("aut", "cre"),
                     email = "Torsten.Hothorn@R-project.org", comment = c(ORCID = "0000-0001-8301-0471")),
              person("Luisa", "Barbanti", role = "ctb",
@@ -47,7 +47,7 @@ URL: https://codeberg.org/thothorn/tram
 Encoding: UTF-8
 License: GPL-2
 NeedsCompilation: no
-Packaged: 2026-08-21 11:28:29 UTC; hothorn
+Packaged: 2026-09-29 14:27:11 UTC; hothorn
 Author: Torsten Hothorn [aut, cre] (ORCID:
     <https://orcid.org/0000-0001-8301-0471>),
   Luisa Barbanti [ctb] (ORCID: <https://orcid.org/0000-0001-5352-5802>),
@@ -60,4 +60,4 @@ Author: Torsten Hothorn [aut, cre] (ORCID:
   Nadja Klein [ctb]
 Maintainer: Torsten Hothorn <Torsten.Hothorn@R-project.org>
 Repository: CRAN
-Date/Publication: 2026-08-23 10:40:02 UTC
+Date/Publication: 2026-10-01 07:30:02 UTC
